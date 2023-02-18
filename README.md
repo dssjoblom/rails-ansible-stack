@@ -27,12 +27,21 @@ by logging out and logging in again.
 Good to know
 ------------
 
-UFW is not setup because of an Ubuntu bug:
+UFW is not set up because of an Ubuntu bug:
 
  * https://bugs.launchpad.net/ubuntu/+source/ufw/+bug/1921350
 
  * it is highly recommended you set up a firewall as well, unless you
-   have already done so
+   have already done so.
+
+   For example:
+
+   ```
+    sudo ufw allow 22
+    sudo ufw allow 80
+    sudo ufw allow 443
+    sudo ufw enable
+   ```
 
 If you fork this repo, make sure you do not commit
 the SSH keys that you put into envs/.
@@ -56,51 +65,51 @@ Adding a new environment
 0. Add a DNS record for the host, for setting up SSL
 
 1. Create a copy of 'example.yaml', say 'staging.yaml', changing
-ansible_host, ansible_user and so on appropriately:
+   ansible_host, ansible_user and so on appropriately:
 
-The complete list of variables that need to be set:
+   The complete list of variables that need to be set:
 
-ansible_host = ip or hostname of server'
-ansible_user = which user ansible will be
-env_name = the name of the environment (e.g. 'example' or 'staging')
-nginx_server_name = servername set in nginx.conf (e.g. www.host.com)
-certbot_domains = comma-separated list of domains to get SSL certs for
+   * ansible_host - ip or hostname of server'
+   * ansible_user -  which user ansible will be
+   * env_name -  the name of the environment (e.g. 'example' or 'staging')
+   * nginx_server_name - servername set in nginx.conf (e.g. www.host.com)
+   * certbot_domains - comma-separated list of domains to get SSL certs for
 (e.g. host.com,www.host.com)
-admin_email = email address of server admin
-rails_env = rails environment
-web_concurrency = rails concurrency (puma)
-ruby_version = ruby version (should be same as in Gemfile)
-bundler_version = bundler version (should be same as in Gemfile)
-app_directory = directory app is deployed to (e.g. /var/www/myapp)
-disallow_robots = if set to yes, nginx sends a robots.txt that
-disallows all
+   * admin_email - email address of server admin
+   * rails_env - rails environment
+   * web_concurrency - rails concurrency (puma)
+   * ruby_version - ruby version (should be same as in Gemfile)
+   * bundler_version - bundler version (should be same as in Gemfile)
+   * app_directory - directory app is deployed to (e.g. /var/www/myapp)
+   * disallow_robots - if set to yes, nginx sends a robots.txt that disallows all
 
-Test the environment:
+   Test the environment:
 
-ansible -i ENVIRONMENT.yaml --private-key PATH_TO_KEY_FILE -m ping rails
+   ansible -i ENVIRONMENT.yaml --private-key PATH_TO_KEY_FILE -m ping rails
 
-Should produce a message similar to:
+   Should produce a message similar to:
 
-rails | SUCCESS => {
-    "ansible_facts": {
-        "discovered_interpreter_python": "/usr/bin/python3"
-    },
-    "changed": false,
-    "ping": "pong"
-}
-
+   ```
+    rails | SUCCESS => {
+        "ansible_facts": {
+            "discovered_interpreter_python": "/usr/bin/python3"
+        },
+        "changed": false,
+        "ping": "pong"
+    }
+   ```
 2. Create an SSH key for the admin user for the environment:
 
-Locally, run:
+   Locally, run:
 
-ssh-keygen -t rsa -b 4096 -C "you@address.com"
+   ssh-keygen -t rsa -b 4096 -C "you@address.com"
 
-Put the key in envs/ENVIRONMENT/ENVIRONMENT.key (ENVIRONMENT.key.pub is also created)
+   Put the key in envs/ENVIRONMENT/ENVIRONMENT.key (ENVIRONMENT.key.pub is also created)
 
-Add the key to your keyring:
+   Add the key to your keyring:
 
-eval "$(ssh-agent -s)"
-ssh-add -K envs/ENVIRONMENT/ENVIRONMENT.key
+   eval "$(ssh-agent -s)"
+   ssh-add -K envs/ENVIRONMENT/ENVIRONMENT.key
 
 Running playbooks
 -----------------
