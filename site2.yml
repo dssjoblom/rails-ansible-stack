@@ -10,7 +10,6 @@
 # - log rotation
 #
 # TODO:
-# - figure out how to start daemons like sidekiq? Need systemctl daemon-reload?
 # - postgresql references specific version (14) for config files, fix if possible?
 #
 # MISSING:

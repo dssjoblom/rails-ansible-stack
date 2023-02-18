@@ -3,9 +3,10 @@ deployment stack (Nginx+Puma with LetsEncrypt, Sidekiq, PostgreSQL,
 Redis, and other commonly used services) on Ubuntu 22.04.
 
 The playbooks assume that Rails will be deployed with Mina, but you
-could probably make e.g. Capistrano work with minor changes (the
-templates assume the currently deployed version is at
-{{app_directory}}/current).
+could could use e.g. Capistrano or a custom script as well. For
+non-Mina deployment scripts, the Rails app should be placed in
+{{app_directory}}/current, and the deployer should deploy as user
+admin (created by the playbooks).
 
 Installing with Ansible
 -----------------------
@@ -79,7 +80,7 @@ Adding a new environment
    * rails_env - rails environment
    * web_concurrency - rails concurrency (puma)
    * ruby_version - ruby version (should be same as in Gemfile)
-   * bundler_version - bundler version (should be same as in Gemfile)
+   * bundler_version - bundler version (should be same as in Gemfile.lock)
    * app_directory - directory app is deployed to (e.g. /var/www/myapp)
    * disallow_robots - if set to yes, nginx sends a robots.txt that disallows all
 
@@ -136,7 +137,7 @@ Installing everything on a new server
 This section assumes you have configured the environment file as
 specified in "Adding a new environment". If the server is not
 firewalled, consider setting up UFW manually before proceeding with
-Ansible, you should allow ports 22, 80 and 443 and disallow all other
+Ansible. You should allow ports 22, 80 and 443 and disallow all other
 ports.
 
 After this, setup is very simple. Run the following command
@@ -159,6 +160,7 @@ General features:
 - harden ssh (don't allow password login etc)
 - make nginx/rails error pages configurable
 - add license
+- make sure letsencrypt renewal actually works
 
 Move the following playbook content into this Git repo as well:
 
