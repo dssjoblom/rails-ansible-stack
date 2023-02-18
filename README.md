@@ -69,8 +69,8 @@ Adding a new environment
 
    The complete list of variables that need to be set:
 
-   * ansible_host - ip or hostname of server'
-   * ansible_user -  which user ansible will be
+   * ansible_host - ip or hostname of server
+   * ansible_user -  which user ansible will be (must be a sudoer)
    * env_name -  the name of the environment (e.g. 'example' or 'staging')
    * nginx_server_name - servername set in nginx.conf (e.g. www.host.com)
    * certbot_domains - comma-separated list of domains to get SSL certs for

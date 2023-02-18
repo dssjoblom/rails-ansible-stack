@@ -154,6 +154,15 @@ http {
       access_log off;
     }
 
+    # Serve vite assets via nginx
+    location ~ ^/(vite)/  {
+      root {{app_directory}}/current/public;
+      gzip_static on;
+      expires max;
+      add_header Cache-Control public;
+      access_log off;
+    }
+
     # Serve packs via nginx
     location ~ ^/(packs)/  {
       root {{app_directory}}/current/public;
