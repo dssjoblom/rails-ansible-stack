@@ -65,6 +65,8 @@ Adding a new environment
 
 0. Add a DNS record for the host, for setting up SSL
 
+   How to do this depends on your DNS provider.
+
 1. Create a copy of 'example.yaml', say 'staging.yaml', changing
    ansible_host, ansible_user and so on appropriately:
 
@@ -113,23 +115,22 @@ Adding a new environment
 
    `ssh-add -K envs/ENVIRONMENT/ENVIRONMENT.key`
 
-Running playbooks
------------------
+Running the playbooks
+---------------------
 
 Run a playbook using:
 
 `ansible-playbook -i ENVIRONMENT.yaml --private-key PATH_TO_KEY_FILE PLAYBOOK`
 
-where PLAYBOOK is the playbook in ansible/
+where PLAYBOOK is the playbook.
 
 The playbooks are:
 
- - site.yml
- - site2.yml
+ - site.yml (only one currently)
 
-Both should be run before attempting to deploy Rails to the server
-with e.g. Mina or Capistrano, and site.yml should be run before
-site2.yml.
+The playbooks should be run before attempting to deploy Rails to the
+server with e.g. Mina or Capistrano, and they should be run in the
+listed order.
 
 Installing everything on a new server
 -------------------------------------
@@ -140,12 +141,9 @@ firewalled, consider setting up UFW manually before proceeding with
 Ansible. You should allow ports 22, 80 and 443 and disallow all other
 ports.
 
-After this, setup is very simple. Run the following command
-sequentially:
+After this, setup is very simple. Run the following command and wait:
 
 `ansible-playbook -i ENVIRONMENT.yaml --private-key PATH_TO_SSH_KEY site.yml`
-
-`ansible-playbook -i ENVIRONMENT.yaml --private-key PATH_TO_SSH_KEY site2.yml`
 
 The environment is now properly setup, the next step is to configure
 app deployment, which is beyond the scope of this project. If you have

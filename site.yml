@@ -127,3 +127,178 @@
         owner: root
         group: root
         mode: u+rw,g-wx,o-wx
+
+    - name: Install Redis server + tools
+      apt:
+        name: ['redis-server', 'redis-tools']
+        update_cache: yes
+
+    - name: Configure Redis (1)
+      shell: |
+        redis-cli config set appendonly yes
+
+    - name: Configure Redis (2)
+      ansible.builtin.lineinfile:
+        path: /etc/redis/redis.conf
+        regexp: '^appendonly '
+        insertafter: '^#appendonly '
+        line: appendonly yes
+
+    - name: Install Fail2Ban
+      apt:
+        name: ['fail2ban']
+        update_cache: yes
+
+    # UFW does not always work: https://bugs.launchpad.net/ubuntu/+source/ufw/+bug/1921350
+    # - name: Configure UFW
+    #   shell: |
+    #     ufw enable
+    #     ufw allow 22
+    #     ufw allow 80
+    #     ufw allow 443
+
+    - name: Configure Limits (1)
+      ansible.builtin.lineinfile:
+        path: /etc/sysctl.conf
+        regexp: '^fs.file-max '
+        insertafter: '^#fs.file-max '
+        line: fs.file-max = 65536
+
+    - name: Configure Limits (2)
+      community.general.pam_limits: "domain=* limit_type={{item.limit_type}} limit_item={{item.limit_item}} value={{item.value}}"
+      with_items:
+        - { limit_type: "soft", limit_item: "nproc", value: 65535 }
+        - { limit_type: "hard", limit_item: "nproc", value: 65535 }
+        - { limit_type: "soft", limit_item: "nofile", value: 65535 }
+        - { limit_type: "hard", limit_item: "nofile", value: 65535 }
+
+    - name: Set up Sidekiq as service
+      template:
+        src: templates/sidekiq.service.j2
+        dest: /etc/systemd/system/sidekiq.service
+        mode: "u=rw,g=r,o=r"
+
+    - name: Add Crontab for restarting sidekiq
+      ansible.builtin.cron:
+        name: "Restart Sidekiq"
+        minute: "0"
+        hour: "15"
+        job: "/bin/systemctl restart sidekiq"
+
+    # - name: Configure pg_hba.conf
+    #   ansible.builtin.lineinfile:
+    #     path: /etc/postgresql/14/main/pg_hba.conf
+    #     regexp: '^local(\s+)all(\s+)postgres'
+    #     insertafter: '^#local(\s+)all(\s+)postgres'
+    #     line: local all postgres md5
+
+    # - name: Restart postgresql
+    #   shell: |
+    #       service postgresql restart
+
+    - name: Configure pg_hba.conf
+      ansible.builtin.lineinfile:
+        path: /etc/postgresql/14/main/pg_hba.conf
+        regexp: '^local(\s+)all(\s+)all(\s+)([a-z]+)'
+        insertafter: '^#local(\s+)all(\s+)all(\s+)([a-z]+)'
+        line: local all all md5
+
+    - name: Restart postgresql
+      shell: |
+        service postgresql restart
+
+    - name: Configure log rotation
+      template:
+        src: templates/rails_logrotate.j2
+        dest: /etc/logrotate.d/rails_logrotate
+        mode: "u=rw,g=r,o=r"
+
+    - name: Configure systemd journaling
+      ansible.builtin.lineinfile:
+        path: /etc/systemd/journald.conf
+        regexp: '^SystemMaxUse='
+        insertbefore: '^#SystemMaxUse='
+        line: SystemMaxUse=1G
+
+    - name: Configure systemd journaling (2)
+      shell: |
+        systemctl restart systemd-journald
+
+    - name: Configure Nginx
+      template:
+        src: templates/nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+        mode: "u=rw,g=r,o=r"
+
+    - name: Setup Certbot with Nginx (1)
+      apt:
+        name: ['certbot', 'python3-certbot-nginx']
+        update_cache: yes
+
+    - name: Setup Certbot with Nginx (2)
+      shell: |
+        if [ ! -e /etc/letsencrypt/live/HAVECERTS ]; then
+          service nginx stop
+          mkdir -p /etc/nginx/cert
+          openssl dhparam -out /etc/nginx/cert/dhparam.pem 2048
+          certbot certonly --standalone --staple-ocsp -d {{certbot_domains}} -m {{admin_email}} --agree-tos --eff-email --manual-public-ip-logging-ok --force-renewal
+          touch /etc/letsencrypt/live/HAVECERTS
+          service nginx start
+        else
+          true
+        fi
+
+    - name: Setup app dirs
+      template:
+        src: "templates/create-app-dirs.service.j2"
+        dest: /etc/systemd/system/create-app-dirs.service
+        owner: root
+        group: root
+        mode: u+rw,g-wx,o-wx
+
+    - name: Setup app dirs (2)
+      template:
+        src: "templates/create-app-dirs.service.j2"
+        dest: /usr/local/bin/create-app-dirs.sh
+        owner: root
+        group: root
+        mode: u+rwx,g-w,o-w
+
+    - name: Setup app dirs (3)
+      shell: |
+        /usr/local/bin/create-app-dirs.sh
+
+    - name: Setup environment variables for running Rails
+      blockinfile:
+        dest: "/etc/bash.bashrc"
+        block: |
+          export RAILS_ENV={{rails_env}}
+          export WEB_CONCURRENCY={{web_concurrency}}
+        marker: '# {mark} ANSIBLE MANAGED BLOCK'
+        insertbefore: BOF
+        create: no
+
+    - name: Setup environment variables for running Rails (2)
+      blockinfile:
+        dest: "/etc/profile"
+        block: |
+          export RAILS_ENV={{rails_env}}
+          export WEB_CONCURRENCY={{web_concurrency}}
+        marker: '# {mark} ANSIBLE MANAGED BLOCK'
+        insertbefore: BOF
+        create: no
+
+    - name: Make sudo preserve Rails environment
+      lineinfile:
+        path: /etc/sudoers
+        state: present
+        regexp: '^Defaults(\s+)env_keep'
+        insertafter: '^Defaults(\s+)env_reset'
+        line: 'Defaults        env_keep += "RAILS_ENV WEB_CONCURRENCY"'
+        validate: '/usr/sbin/visudo -cf %s'
+
+    - name: Setup Puma as service
+      template:
+        src: templates/puma.service.j2
+        dest: /etc/systemd/system/puma.service
+        mode: "u=rw,g=r,o=r"
