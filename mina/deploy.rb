@@ -24,7 +24,9 @@ set :shared_dirs, fetch(:shared_dirs, []).push('node_modules',
                                                'tmp/cache',
                                                'tmp/sockets')
 
-set :shared_files, fetch(:shared_files, []).push('config/secrets.yml')
+if File.exist?('config/secrets.yml')
+  set :shared_files, fetch(:shared_files, []).push('config/secrets.yml')
+end
 
 # This task is the environment that is loaded for all remote run
 # commands, such as `mina deploy` or `mina rake`.
@@ -53,7 +55,8 @@ namespace :puma do
 
   desc 'Restart puma'
   task restart: :remote_environment do
-    command 'sudo service puma reload'
+    command 'sudo service puma stop'
+    command 'sudo service puma start'
   rescue StandardError => e
     puts "Failed to restart puma: #{e}\nAssuming not started."
   end
@@ -68,13 +71,17 @@ namespace :nginx do
 end
 
 task :fix_secrets do
-  # Don't know why this doesn't work automatically
-  command "cp #{fetch(:deploy_to)}/shared/config/secrets.yml #{fetch(:deploy_to)}/current/config/secrets.yml"
+  if File.exist?('config/secrets.yml')
+    # Don't know why this doesn't work automatically
+    command "cp #{fetch(:deploy_to)}/shared/config/secrets.yml #{fetch(:deploy_to)}/current/config/secrets.yml"
+  end
 end
 
 task :upload_secrets do
   run :local do
-    command "scp config/secrets.yml #{fetch(:user)}@#{fetch(:domain)}:#{fetch(:deploy_to)}/shared/config/secrets.yml"
+    if File.exist?('config/secrets.yml')
+      command "scp config/secrets.yml #{fetch(:user)}@#{fetch(:domain)}:#{fetch(:deploy_to)}/shared/config/secrets.yml"
+    end
   end
 end
 
@@ -126,6 +133,10 @@ task :setup_db do
   end
 end
 
+task install_js: :remote_environment do
+  command 'yarn install'
+end
+
 # Store our current revision so that it is visible when on-site
 set :deployed_revision, %x[git rev-parse #{fetch(:branch)}].strip
 
@@ -141,6 +152,7 @@ task :deploy do
     invoke :fix_secrets
     invoke :'bundle:install'
     invoke :'rails:db_migrate'
+    invoke :install_js
     invoke :compile_assets
     invoke :'deploy:cleanup'
 
