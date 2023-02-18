@@ -12,3 +12,5 @@ hosts:
     bundler_version: 2.4.6
     app_directory: /var/www/example
     disallow_robots: 'no'
+    rails_db_username: example
+    rails_db_password: example

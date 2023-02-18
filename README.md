@@ -85,6 +85,8 @@ Adding a new environment
    * bundler_version - bundler version (should be same as in Gemfile.lock)
    * app_directory - directory app is deployed to (e.g. /var/www/myapp)
    * disallow_robots - if set to yes, nginx sends a robots.txt that disallows all
+   * rails_db_username - username for db user that will created (you will use this in Rails database.yml)
+   * rails_db_password - db password for username (this goes into Rails database.yml as well)
 
    Test the environment:
 
@@ -161,6 +163,8 @@ General features:
 - make sure letsencrypt renewal actually works
 - puma service restart behavior
 - puma when not using unix domain sockets
+- lint the playbooks
+- postgresql user/db creation
 
 Move the following playbook content into this Git repo as well:
 

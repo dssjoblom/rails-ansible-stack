@@ -207,6 +207,14 @@
       shell: |
         service postgresql restart
 
+    - name: Create rails DB user with privileges
+      postgresql_user:
+        name: {{rails_db_username}}
+        password: {{rails_db_password}}
+        role_attr_flags: CREATEDB
+      become: true
+      become_user: postgres
+
     - name: Configure log rotation
       template:
         src: templates/rails_logrotate.j2
