@@ -1,2 +1,2 @@
-/.private*.yaml
-/env/private*
+/private*.yaml
+/envs/private*/*
