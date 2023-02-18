@@ -53,11 +53,11 @@ On the client machine (e.g. computer used for development):
 
 Install Python and Pip:
 
-sudo apt-get install python3-pip
+`sudo apt-get install python3-pip`
 
 Install Ansible:
 
-pip3 install ansible
+`pip3 install ansible`
 
 Adding a new environment
 ------------------------
@@ -85,7 +85,7 @@ Adding a new environment
 
    Test the environment:
 
-   ansible -i ENVIRONMENT.yaml --private-key PATH_TO_KEY_FILE -m ping rails
+   `ansible -i ENVIRONMENT.yaml --private-key PATH_TO_KEY_FILE -m ping rails`
 
    Should produce a message similar to:
 
@@ -102,21 +102,21 @@ Adding a new environment
 
    Locally, run:
 
-   ssh-keygen -t rsa -b 4096 -C "you@address.com"
+   `ssh-keygen -t rsa -b 4096 -C "you@address.com"`
 
    Put the key in envs/ENVIRONMENT/ENVIRONMENT.key (ENVIRONMENT.key.pub is also created)
 
    Add the key to your keyring:
 
-   eval "$(ssh-agent -s)"
-   ssh-add -K envs/ENVIRONMENT/ENVIRONMENT.key
+   `eval "$(ssh-agent -s)"`
+   `ssh-add -K envs/ENVIRONMENT/ENVIRONMENT.key`
 
 Running playbooks
 -----------------
 
 Run a playbook using:
 
-ansible-playbook -i ENVIRONMENT --private-key PATH_TO_KEY_FILE PLAYBOOK
+`ansible-playbook -i ENVIRONMENT.yaml --private-key PATH_TO_KEY_FILE PLAYBOOK`
 
 where PLAYBOOK is the playbook in ansible/
 
@@ -132,20 +132,21 @@ site2.yml.
 Installing everything on a new server
 -------------------------------------
 
-Setting up a brand new server. This assumes you have configured the
-environment file as specified in "Adding a new environment". If the
-server is not firewalled, consider setting up UFW manually before
-proceeding with Ansible, you should allow ports 22, 80 and 443 and
-disallow all other ports.
+This section assumes you have configured the environment file as
+specified in "Adding a new environment". If the server is not
+firewalled, consider setting up UFW manually before proceeding with
+Ansible, you should allow ports 22, 80 and 443 and disallow all other
+ports.
 
 After this, setup is very simple. Run the following command
 sequentially:
 
-ansible-playbook -i ENVIRONMENT --private-key PATH_TO_SSH_KEY site.yml
-ansible-playbook -i ENVIRONMENT --private-key PATH_TO_SSH_KEY site2.yml
+`ansible-playbook -i ENVIRONMENT.yaml --private-key PATH_TO_SSH_KEY site.yml`
+`ansible-playbook -i ENVIRONMENT.yaml --private-key PATH_TO_SSH_KEY site2.yml`
 
 The environment is now properly setup, the next step is to configure
-app deployment.
+app deployment, which is beyond the scope of this project. If you have
+an existing Mina deploy.rb, you should be able to deploy immediately.
 
 TODO
 ----
