@@ -210,7 +210,7 @@ else
 end
 ```
 
-After this, run these commands once for each environment from the Rails project root:
+After this, run this command once for each environment from the Rails project root:
 
 `mina ENV setup`
 
