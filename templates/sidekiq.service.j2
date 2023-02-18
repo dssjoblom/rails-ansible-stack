@@ -5,7 +5,7 @@ After=syslog.target network.target redis.service
 [Service]
 Type=simple
 WorkingDirectory={{app_directory}}/current
-ExecStart=/bin/bash -lc 'bundle exec sidekiq -e {{env_name}}'
+ExecStart=/bin/bash -lc 'bundle exec sidekiq -e {{rails_env}}'
 User=admin
 Group=admin
 UMask=0002
