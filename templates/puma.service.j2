@@ -26,9 +26,9 @@ PIDFile=/var/run/puma/puma.pid
 # and has several limitations:
 # https://github.com/puma/puma/blob/master/docs/restart.md
 
-ExecStart  = /home/admin/.rvm/gems/ruby-{{ruby_version}}/wrappers/bundle exec bundle exec pumactl start -F config/puma.rb
-ExecReload = /home/admin/.rvm/gems/ruby-{{ruby_version}}/wrappers/bundle exec bundle exec pumactl restart -F config/puma.rb
-ExecStop   = /home/admin/.rvm/gems/ruby-{{ruby_version}}/wrappers/bundle exec bundle exec pumactl stop -F config/puma.rb
+ExecStart  = /bin/bash -lc 'bundle exec pumactl start -F config/puma.rb'
+ExecReload = /bin/bash -lc 'bundle exec pumactl restart -F config/puma.rb'
+ExecStop   = /bin/bash -lc 'bundle exec pumactl stop -F config/puma.rb'
 
 # Should systemd restart puma?
 #Restart=always

@@ -155,11 +155,12 @@ TODO
 General features:
 
 - add out-of-the-box Capistrano support
-- harden ssh (don't allow password login etc)
+- harden ssh automatically (don't allow password login etc)
 - make nginx/rails error pages configurable
 - add license
 - make sure letsencrypt renewal actually works
 - puma service restart behavior
+- puma when not using unix domain sockets
 
 Move the following playbook content into this Git repo as well:
 
