@@ -87,6 +87,8 @@ Adding a new environment
 
    `PasswordAuthentication no`
 
+   Remember to restart sshd:
+
    `sudo service sshd restart`
 
 2. Create a copy of 'example.yaml', say 'staging.yaml', changing
