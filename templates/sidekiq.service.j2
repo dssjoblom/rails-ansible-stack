@@ -5,6 +5,7 @@ After=syslog.target network.target redis.service
 [Service]
 Type=simple
 WorkingDirectory={{app_directory}}/current
+Environment=RAILS_ENV={{rails_env}}
 ExecStart=/bin/bash -lc 'bundle exec sidekiq -e {{rails_env}}'
 User=admin
 Group=admin
@@ -16,10 +17,6 @@ Restart=on-failure
 
 # Output goes to log file
 StandardOutput=file:{{app_directory}}/current/log/sidekiq.log
-
-# If we want output to go to /var/log/syslog
-#StandardOutput=syslog
-#StandardError=syslog
 
 SyslogIdentifier=sidekiq
 

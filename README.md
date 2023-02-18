@@ -159,6 +159,7 @@ General features:
 - make nginx/rails error pages configurable
 - add license
 - make sure letsencrypt renewal actually works
+- puma service restart behavior
 
 Move the following playbook content into this Git repo as well:
 

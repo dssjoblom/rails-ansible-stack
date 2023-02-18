@@ -12,8 +12,6 @@ Type=simple
 User=admin
 WorkingDirectory={{app_directory}}/current
 RuntimeDirectory=puma # /var/run/puma
-
-# Production env. Change for staging or other server
 Environment=RAILS_ENV={{rails_env}} WEB_CONCURRENCY={{web_concurrency}}
 
 # Path to PID file so that systemd knows which is the master process
