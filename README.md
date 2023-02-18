@@ -206,8 +206,6 @@ if ENV.fetch('RAILS_ENV') != 'development'
   bind 'unix:///var/run/puma/puma.sock'
   pidfile '/run/puma/puma.pid'
 else
-  app_dir = '.'
-  shared_dir = "#{app_dir}/tmp"
   port ENV.fetch('PORT') { 3000 }
 end
 ```
