@@ -165,6 +165,7 @@ General features:
 - puma when not using unix domain sockets
 - lint the playbooks
 - postgresql user/db creation
+- refactor the big site.yml playbook
 
 Move the following playbook content into this Git repo as well:
 
