@@ -103,7 +103,7 @@ Adding a new environment
    * nginx_server_name - servername set in nginx.conf (e.g. www.host.com)
    * certbot_domains - comma-separated list of domains to get SSL certs for
 (e.g. host.com,www.host.com)
-   * admin_email - email address of server admin
+   * admin_email - email address of server admin (for Certbot notifications)
    * rails_env - rails environment
    * web_concurrency - rails concurrency (puma)
    * ruby_version - ruby version (should be same as in Gemfile)
