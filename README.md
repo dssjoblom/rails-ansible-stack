@@ -27,7 +27,7 @@ UFW is not set up because of an Ubuntu bug:
 
    For example:
 
-   ```
+   ```sh
     sudo ufw allow 22
     sudo ufw allow 80
     sudo ufw allow 443
@@ -182,7 +182,7 @@ After this, setup is very simple. Run the following command and wait:
 
 The script will take some time to run, from 3 to 15 minutes usually.
 
-The environment is now properly setup, the next step is to set up app
+The environment is now properly set up, the next step is to set up app
 deployment.
 
 App deployment with Mina
