@@ -8,16 +8,6 @@ non-Mina deployment scripts, the Rails app should be placed in
 {{app_directory}}/current, and the deployer should deploy as user
 admin (created by the playbooks).
 
-Installing with Ansible
------------------------
-
-When preparing to deploy to a new server, as a rule of thumb, creating
-a new environment for a new server takes about 15 minutes, depending
-on experience. The installation process itself will usually take at
-least 1 hour, depending on network and cpu speed, as it involves
-installing many packages, some of which are compiled. In total,
-reserve 1+ hour, preferably 2 hours for an install from scratch.
-
 Bugs
 ----
 
@@ -67,13 +57,45 @@ Adding a new environment
 
    How to do this depends on your DNS provider.
 
-1. Create a copy of 'example.yaml', say 'staging.yaml', changing
+1. Set up a deploy user with passwordless sudo on the host. The user
+   must also have passwordless ssh login.
+
+   Create user with sudo:
+
+   `sudo adduser deployer`
+
+   `sudo adduser deployer sudo`
+
+   Change to passwordless:
+
+   `sudo visudo`
+
+   Add to the bottom of the file:
+
+   `deployer  ALL=(ALL) NOPASSWD: ALL`
+
+   Copy over ssh key for passwordless login (create the key first if necessary):
+
+   `ssh-copy-id deployer@host`
+
+   After you have verified that this key works for SSH login, disable
+   SSH password login by modifying /etc/ssh/sshd_config:
+
+   `PubkeyAuthentication yes`
+
+   `UsePAM no`
+
+   `PasswordAuthentication no`
+
+   `sudo service sshd restart`
+
+2. Create a copy of 'example.yaml', say 'staging.yaml', changing
    ansible_host, ansible_user and so on appropriately:
 
    The complete list of variables that need to be set:
 
    * ansible_host - ip or hostname of server
-   * ansible_user -  which user ansible will be (must be a sudoer)
+   * ansible_user -  which user ansible will be (must be a passwordless sudoer)
    * env_name -  the name of the environment (e.g. 'example' or 'staging')
    * nginx_server_name - servername set in nginx.conf (e.g. www.host.com)
    * certbot_domains - comma-separated list of domains to get SSL certs for
@@ -86,7 +108,11 @@ Adding a new environment
    * app_directory - directory app is deployed to (e.g. /var/www/myapp)
    * disallow_robots - if set to yes, nginx sends a robots.txt that disallows all
    * rails_db_username - username for db user that will created (you will use this in Rails database.yml)
-   * rails_db_password - db password for username (this goes into Rails database.yml as well)
+   * rails_db_password - db password for username (this goes into
+     Rails database.yml as well, will be exported to RAILS_DATABASE_PASSWORD
+     environment variable)
+   * timezone - timezone to set on server
+   * rails_master_key - rails master key (from config/master.key, generate with e.g. rails:credentials:edit)
 
    Test the environment:
 
@@ -103,19 +129,23 @@ Adding a new environment
         "ping": "pong"
     }
    ```
-2. Create an SSH key for the admin user for the environment:
+3. Create an SSH key for the admin user for the environment:
 
    Locally, run:
 
-   `ssh-keygen -t rsa -b 4096 -C "you@address.com"`
+   `ssh-keygen -t ed25519 -C "you@address.com"`
 
-   Put the key in envs/ENVIRONMENT/ENVIRONMENT.key (ENVIRONMENT.key.pub is also created)
+   Put the keys in envs/ENVIRONMENT/ (id_ed25519 and id_ed25519.pub are created)
 
    Add the key to your keyring:
 
    `eval "$(ssh-agent -s)"`
 
-   `ssh-add -K envs/ENVIRONMENT/ENVIRONMENT.key`
+   `ssh-add envs/ENVIRONMENT/id_ed25519`
+
+   NOTE: this is a key for the user that is created in the
+   environment, not the key you pass to ansible-playbook
+   --private-key. The latter is for the user you created in step 1.
 
 Running the playbooks
 ---------------------
@@ -145,11 +175,76 @@ ports.
 
 After this, setup is very simple. Run the following command and wait:
 
-`ansible-playbook -i ENVIRONMENT.yaml --private-key PATH_TO_SSH_KEY site.yml`
+`ansible-playbook -i ENVIRONMENT.yaml --private-key PATH_TO_KEY_FILE site.yml`
 
-The environment is now properly setup, the next step is to configure
-app deployment, which is beyond the scope of this project. If you have
-an existing Mina deploy.rb, you should be able to deploy immediately.
+The script will take some time to run, from 3 to 15 minutes usually.
+
+The environment is now properly setup, the next step is to set up app
+deployment.
+
+App deployment with Mina
+------------------------
+
+This section assumes you will use the scripts in mina/.
+
+Copy the scripts to your Rails application's config/ directory:
+
+`cp mina/deploy.rb PATH_TO_APP/config/deploy.rb`
+
+`cp -R mina/deploy PATH_TO_APP/config/deploy`
+
+Modify the config/deploy/production.rb script to suite your needs. You
+can also add other environments into config/deploy,
+e.g. config/deploy/staging.rb.
+
+Next, make sure Puma is binding to a Unix domain socket (for nginx) in
+config/puma.rb:
+
+```ruby
+# Setup socket + pid file
+if ENV.fetch('RAILS_ENV') != 'development'
+  bind 'unix:///var/run/puma/puma.sock'
+  pidfile '/run/puma/puma.pid'
+else
+  app_dir = '.'
+  shared_dir = "#{app_dir}/tmp"
+  port ENV.fetch('PORT') { 3000 }
+end
+```
+
+After this, run these commands once for each environment from the Rails project root:
+
+`mina ENV setup`
+
+Next, you need to copy over an ssh key for your Github (or other git)
+repository to the host (matching URL in config/deploy/ENV.rb):
+
+`scp PATH_TO_KEY admin@HOST:/home/admin/.ssh`
+
+Now, set up the database and other things for the project (do this
+once for each environment):
+
+`mina ENV init_deploy`
+
+`mina ENV setup_db`
+
+If you can't set up the database due to "missing secret key base", make sure
+
+`config.require_master_key = true`
+
+is set in the Rails environment.
+
+Now, you can deploy your project by running:
+
+`mina ENV deploy`
+
+Where ENV is one of the environments configured in config/deploy/*.rb.
+For example, to deploy to production:
+
+`mina production deploy`
+
+When you make changes, simply push them to Git and run `mina ENV
+deploy` again. That's it!
 
 TODO
 ----
@@ -161,11 +256,15 @@ General features:
 - make nginx/rails error pages configurable
 - add license
 - make sure letsencrypt renewal actually works
+  * https://certbot.eff.org/instructions?ws=nginx&os=ubuntufocal&tab=standard
 - puma service restart behavior
 - puma when not using unix domain sockets
 - lint the playbooks
 - postgresql user/db creation
 - refactor the big site.yml playbook
+- fix Mina + Bundler deprecation warnings
+- figure out good way of handling environment variables
+- allow specification of software versions
 
 Move the following playbook content into this Git repo as well:
 

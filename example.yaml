@@ -14,3 +14,5 @@ hosts:
     disallow_robots: 'no'
     rails_db_username: example
     rails_db_password: example
+    timezone: Europe/Helsinki
+    rails_master_key: SECRET

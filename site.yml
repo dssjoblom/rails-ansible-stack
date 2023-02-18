@@ -37,11 +37,16 @@
     - name: Set up authorized keys for the admin user
       authorized_key: user=admin key="{{item}}"
       with_file:
-        - "{{env_name}}.key.pub"
+        - "envs/{{env_name}}/id_ed25519.pub"
 
-    - name: Set timezone to Europe/Helsinki
+    # https://github.com/camptocamp/puppet-accounts/issues/35
+    - name: Fix SSH passwordless login for admin user
+      shell: |
+        usermod -p '*' admin
+
+    - name: Set timezone
       community.general.timezone:
-        name: Europe/Helsinki
+        name: "{{timezone}}"
 
     - name: Install prerequisite packages (commonly used dependencies)
       apt:
@@ -62,6 +67,7 @@
                'unzip',
                'wget',
                'apt-transport-https',
+               'acl',
                'git',]
 
     - name: Download RVM
@@ -93,11 +99,14 @@
       become_user: admin
       become_method: sudo
 
-    - name: Install latest available version of bundler
+    - name: Install bundler
       command: "sudo -iu admin gem install bundler:{{bundler_version}}"
 
-    - name: Install latest available version of bundle
-      command: "sudo -iu admin gem install bundle:{{bundler_version}}"
+    - name: Install Node from nodesource.com
+      shell: |
+        curl -fsSL https://deb.nodesource.com/setup_19.x | bash -
+        apt update
+        apt install -y nodejs
 
     - name: Install Yarn from yarnpkg.com
       shell: |
@@ -209,8 +218,8 @@
 
     - name: Create rails DB user with privileges
       postgresql_user:
-        name: {{rails_db_username}}
-        password: {{rails_db_password}}
+        name: "{{rails_db_username}}"
+        password: "{{rails_db_password}}"
         role_attr_flags: CREATEDB
       become: true
       become_user: postgres
@@ -249,7 +258,7 @@
           service nginx stop
           mkdir -p /etc/nginx/cert
           openssl dhparam -out /etc/nginx/cert/dhparam.pem 2048
-          certbot certonly --standalone --staple-ocsp -d {{certbot_domains}} -m {{admin_email}} --agree-tos --eff-email --manual-public-ip-logging-ok --force-renewal
+          certbot certonly --standalone --staple-ocsp -d "{{certbot_domains}}" -m {{admin_email}} --agree-tos --eff-email --manual-public-ip-logging-ok --force-renewal
           touch /etc/letsencrypt/live/HAVECERTS
           service nginx start
         else
@@ -266,7 +275,7 @@
 
     - name: Setup app dirs (2)
       template:
-        src: "templates/create-app-dirs.service.j2"
+        src: "templates/create-app-dirs.sh.j2"
         dest: /usr/local/bin/create-app-dirs.sh
         owner: root
         group: root
@@ -282,6 +291,8 @@
         block: |
           export RAILS_ENV={{rails_env}}
           export WEB_CONCURRENCY={{web_concurrency}}
+          export RAILS_MASTER_KEY={{rails_master_key}}
+          export RAILS_DATABASE_PASSWORD={{rails_db_password}}
         marker: '# {mark} ANSIBLE MANAGED BLOCK'
         insertbefore: BOF
         create: no
@@ -292,6 +303,8 @@
         block: |
           export RAILS_ENV={{rails_env}}
           export WEB_CONCURRENCY={{web_concurrency}}
+          export RAILS_MASTER_KEY={{rails_master_key}}
+          export RAILS_DATABASE_PASSWORD={{rails_db_password}}
         marker: '# {mark} ANSIBLE MANAGED BLOCK'
         insertbefore: BOF
         create: no
@@ -302,7 +315,7 @@
         state: present
         regexp: '^Defaults(\s+)env_keep'
         insertafter: '^Defaults(\s+)env_reset'
-        line: 'Defaults        env_keep += "RAILS_ENV WEB_CONCURRENCY"'
+        line: 'Defaults        env_keep += "RAILS_ENV WEB_CONCURRENCY RAILS_MASTER_KEY RAILS_DATABASE_PASSWORD"'
         validate: '/usr/sbin/visudo -cf %s'
 
     - name: Setup Puma as service
