@@ -213,7 +213,9 @@ else
 end
 ```
 
-After this, run this command once for each environment from the Rails project root:
+In the commands below, ENV is one of the environments configured in config/deploy/*.rb
+
+Run this command once for each env:
 
 `mina ENV setup`
 
