@@ -104,7 +104,7 @@ http {
 
     # Specify protocols explicitly (only these protocols are supported, disables SSL3).
     # Also disables TLS v1.0 and v.1.1 (updated September 2020).
-    ssl_protocols             TLSv1.2;
+    ssl_protocols             TLSv1.2 TLSv1.3;
 
     # SSL hardening
     ssl_dhparam /etc/nginx/cert/dhparam.pem;
