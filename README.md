@@ -268,6 +268,8 @@ General features:
 - fix Mina + Bundler deprecation warnings
 - figure out good way of handling environment variables
 - allow specification of software versions
+- move github key setup into site.yml (instead
+  of listing it as a manual step here)
 
 Move the following playbook content into this Git repo as well:
 
