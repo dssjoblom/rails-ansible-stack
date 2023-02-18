@@ -104,9 +104,9 @@ Adding a new environment
    * certbot_domains - comma-separated list of domains to get SSL certs for
 (e.g. host.com,www.host.com)
    * admin_email - email address of server admin (for Certbot notifications)
-   * rails_env - rails environment
-   * web_concurrency - rails concurrency (puma)
-   * ruby_version - ruby version (should be same as in Gemfile)
+   * rails_env - Rails environment
+   * web_concurrency - Rails concurrency (puma)
+   * ruby_version - Ruby version (should be same as in Gemfile)
    * bundler_version - bundler version (should be same as in Gemfile.lock)
    * app_directory - directory app is deployed to (e.g. /var/www/myapp)
    * disallow_robots - if set to yes, nginx sends a robots.txt that disallows all
@@ -115,7 +115,7 @@ Adding a new environment
      Rails database.yml as well, will be exported to RAILS_DATABASE_PASSWORD
      environment variable)
    * timezone - timezone to set on server
-   * rails_master_key - rails master key (from config/master.key, generate with e.g. rails:credentials:edit)
+   * rails_master_key - Rails master key (from config/master.key, generate with e.g. rails:credentials:edit)
 
    Test the environment:
 
