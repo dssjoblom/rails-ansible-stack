@@ -1,0 +1,8 @@
+#!/bin/bash
+
+mkdir -p /var/run/puma
+mkdir -p {{app_directory}}
+
+chown -R admin:admin {{app_directory}}
+
+echo 'Directories created!'

@@ -1,0 +1,8 @@
+[Unit]
+Description=Creates application directories on startup (if they don't exist)
+
+[Service]
+ExecStart=/usr/local/bin/create-app-dirs.sh
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,40 @@
+# Put this file in /etc/systemd/system/puma.service,
+# and then reload the service configuration via
+# sudo systemctl daemon-reload
+
+[Unit]
+Description=Puma HTTP Server
+After=network.target
+
+[Service]
+
+Type=simple
+User=admin
+WorkingDirectory={{app_directory}}/current
+RuntimeDirectory=puma # /var/run/puma
+
+# Production env. Change for staging or other server
+Environment=RAILS_ENV={{rails_env}} WEB_CONCURRENCY={{web_concurrency}}
+
+# Path to PID file so that systemd knows which is the master process
+PIDFile=/var/run/puma/puma.pid
+
+# The commands to start/restart/stop Puma (`which bundle` to figure out correct
+# path, create wrappers if necessary by saying
+# rvm wrapper original_path_to_bundle)
+
+# Restart is done as restart, not phased-restart.
+# phased-restart is possible, but requires WEB_CONCURRENCY >= 2,
+# and has several limitations:
+# https://github.com/puma/puma/blob/master/docs/restart.md
+
+ExecStart  = /home/admin/.rvm/gems/ruby-{{ruby_version}}/wrappers/bundle exec bundle exec pumactl start -F config/puma.rb
+ExecReload = /home/admin/.rvm/gems/ruby-{{ruby_version}}/wrappers/bundle exec bundle exec pumactl restart -F config/puma.rb
+ExecStop   = /home/admin/.rvm/gems/ruby-{{ruby_version}}/wrappers/bundle exec bundle exec pumactl stop -F config/puma.rb
+
+# Should systemd restart puma?
+#Restart=always
+#KillMode=process
+
+[Install]
+WantedBy=multi-user.target

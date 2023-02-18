@@ -1,0 +1,14 @@
+{{app_directory}}/shared/log/*.log {
+    hourly # Requires actually setting logrotated to run more often with cron
+    su admin admin
+    create 664 admin admin
+    size 10M
+    missingok
+    rotate 520
+    compress
+    delaycompress
+    notifempty
+    copytruncate
+    dateext
+    dateformat -%Y-%m-%d--%s
+}

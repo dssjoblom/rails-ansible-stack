@@ -1,0 +1,27 @@
+[Unit]
+Description=sidekiq
+After=syslog.target network.target redis.service
+
+[Service]
+Type=simple
+WorkingDirectory={{app_directory}}/current
+ExecStart=/bin/bash -lc 'bundle exec sidekiq -e {{env_name}}'
+User=admin
+Group=admin
+UMask=0002
+
+# if we crash, restart
+RestartSec=1
+Restart=on-failure
+
+# Output goes to log file
+StandardOutput=file:{{app_directory}}/current/log/sidekiq.log
+
+# If we want output to go to /var/log/syslog
+#StandardOutput=syslog
+#StandardError=syslog
+
+SyslogIdentifier=sidekiq
+
+[Install]
+WantedBy=multi-user.target

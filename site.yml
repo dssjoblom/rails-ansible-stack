@@ -1,0 +1,129 @@
+# ansible/site.yml
+
+---
+- hosts: rails
+  remote_user: root
+  become: yes
+
+  tasks:
+
+    - name: Upgrade all packages to the latest version
+      apt:
+        upgrade: yes
+        update_cache: yes
+
+    - name: Make sure we have a 'wheel' group
+      group:
+        name: wheel
+        state: present
+
+    - name: Allow 'wheel' group to have passwordless sudo
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: '^%wheel'
+        line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
+
+    - name: Create "admin" user (with sudo)
+      user:
+        name: admin
+        groups: wheel
+        append: yes
+        state: present
+        createhome: yes
+        shell: /bin/bash
+
+    - name: Set up authorized keys for the admin user
+      authorized_key: user=admin key="{{item}}"
+      with_file:
+        - "{{env_name}}.key.pub"
+
+    - name: Set timezone to Europe/Helsinki
+      community.general.timezone:
+        name: Europe/Helsinki
+
+    - name: Install prerequisite packages (commonly used dependencies)
+      apt:
+        name: ['build-essential',
+               'libgmp3-dev',
+               'curl',
+               'nodejs',
+               'postgresql',
+               'postgresql-server-dev-14',
+               'libpq-dev',
+               'python3-psycopg2',
+               'redis',
+               'imagemagick',
+               'libmagickwand-dev',
+               'gnupg2',
+               'ca-certificates',
+               'lsb-release',
+               'unzip',
+               'wget',
+               'apt-transport-https',
+               'git',]
+
+    - name: Download RVM
+      get_url:
+        url: https://get.rvm.io
+        dest: /home/admin/rvm.sh
+      become: yes
+      become_user: admin
+      become_method: sudo
+
+    - name: Install RVM
+      ansible.builtin.command: /bin/bash /home/admin/rvm.sh
+      become: yes
+      become_user: admin
+      become_method: sudo
+
+    - name: Install Ruby
+      shell: |
+        cd /home/admin
+        source ~/.rvm/scripts/rvm
+        /home/admin/.rvm/bin/rvm install {{ruby_version}}
+      become: yes
+      become_user: admin
+      become_method: sudo
+
+    - name: Set default Ruby
+      command: /home/admin/.rvm/bin/rvm alias create default ruby-{{ruby_version}}
+      become: yes
+      become_user: admin
+      become_method: sudo
+
+    - name: Install latest available version of bundler
+      command: "sudo -iu admin gem install bundler:{{bundler_version}}"
+
+    - name: Install latest available version of bundle
+      command: "sudo -iu admin gem install bundle:{{bundler_version}}"
+
+    - name: Install Yarn from yarnpkg.com
+      shell: |
+        curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+        echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+        apt update
+        apt install yarn
+
+    - name: Install Nginx from nginx.org
+      shell: |
+        echo "deb http://nginx.org/packages/ubuntu `lsb_release -cs` nginx" | tee /etc/apt/sources.list.d/nginx.list
+        tee /etc/apt/preferences.d/99nginx << END
+        Package: *
+        Pin: origin nginx.org
+        Pin: release o=nginx
+        Pin-Priority: 900
+        END
+        curl -o /tmp/nginx_signing.key https://nginx.org/keys/nginx_signing.key
+        mv /tmp/nginx_signing.key /etc/apt/trusted.gpg.d/nginx_signing.asc
+        apt update
+        apt install nginx
+
+    - name: Configure ImageMagick policy.xml
+      copy:
+        src: "configs/policy.xml"
+        dest: /etc/ImageMagick-6/policy.xml
+        owner: root
+        group: root
+        mode: u+rw,g-wx,o-wx
