@@ -109,6 +109,7 @@ Adding a new environment
    Add the key to your keyring:
 
    `eval "$(ssh-agent -s)"`
+
    `ssh-add -K envs/ENVIRONMENT/ENVIRONMENT.key`
 
 Running playbooks
@@ -142,6 +143,7 @@ After this, setup is very simple. Run the following command
 sequentially:
 
 `ansible-playbook -i ENVIRONMENT.yaml --private-key PATH_TO_SSH_KEY site.yml`
+
 `ansible-playbook -i ENVIRONMENT.yaml --private-key PATH_TO_SSH_KEY site2.yml`
 
 The environment is now properly setup, the next step is to configure
@@ -156,6 +158,7 @@ General features:
 - add out-of-the-box Capistrano support
 - harden ssh (don't allow password login etc)
 - make nginx/rails error pages configurable
+- add license
 
 Move the following playbook content into this Git repo as well:
 
