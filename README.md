@@ -171,8 +171,8 @@ The script will take some time to run, from 3 to 15 minutes usually.
 
 The environment is now properly set up, the next step is to set up app
 deployment. If you want to use the included Mina scripts, see
-#app-deployment-with-mina. For custom scripts or another another
-solution, like Capistrano, see #app-deployment-with-other-scripts.
+(#app-deployment-with-mina). For custom scripts or another another
+solution, like Capistrano, see (#app-deployment-with-other-scripts).
 
 # App deployment with Mina
 
