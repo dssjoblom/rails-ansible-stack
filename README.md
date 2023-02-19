@@ -6,13 +6,6 @@ Additionally, this project contains a Mina configuration that can be
 used to deploy the Rails application, but you can also use custom
 scripts or other tools, e.g. Capistrano.
 
-Bugs
-----
-
-There is something wrong with the ruby installation, ruby, bundler
-etc. are not always found when SSH:ing. This can usually be fixed
-by logging out and logging in again.
-
 Good to know
 ------------
 
