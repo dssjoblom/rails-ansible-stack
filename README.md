@@ -289,6 +289,8 @@ General features:
 - move github key setup into site.yml (instead of listing it as a manual step here)
 - check Redis eviction policy
 - make sure the Mina script actually works with multiple envs
+- give admin role automatic use of specific services,
+  so deploy scripts don't have to sudo
 
 Move the following playbook content into this Git repo as well:
 
