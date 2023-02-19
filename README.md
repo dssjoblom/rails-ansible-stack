@@ -127,7 +127,7 @@ Install Ansible:
 
    `ssh-keygen -t ed25519 -C "you@address.com"`
 
-   Put the keys in envs/ENVIRONMENT/ (id_ed25519 and id_ed25519.pub are created)
+   Put the keys in envs/ENVIRONMENT/ (id_ed25519 and id_ed25519.pub)
 
    Add the key to your keyring:
 
@@ -171,8 +171,8 @@ The script will take some time to run, from 3 to 15 minutes usually.
 
 The environment is now properly set up, the next step is to set up app
 deployment. If you want to use the included Mina scripts, see
-(#app-deployment-with-mina). For custom scripts or another another
-solution, like Capistrano, see (#app-deployment-with-other-scripts).
+[App deployment with Mina](#app-deployment-with-mina). For custom scripts or another another
+solution, like Capistrano, see [App deployment with other tools](#app-deployment-with-other-tools).
 
 # App deployment with Mina
 
@@ -247,7 +247,7 @@ For example, to deploy to production:
 When you make changes, simply push them to Git and run `mina ENV
 deploy` again. That's it!
 
-# App deployment with other scripts
+# App deployment with other tools
 
 This section applies if you are deploying your app with a custom
 script or some other solution, e.g. Capistrano.
@@ -263,12 +263,13 @@ What your deployment scripts must do in order to work:
 3. Use systemd to manage puma and sidekiq, e.g. to start them,
    do:
 
-   - service puma start
-   - service sidekiq restart
+   - `service puma start`
+   - `service sidekiq start`
 
 4. Restart nginx so that the new puma socket is used:
 
-   - service nginx restart
+   - `service nginx restart`
+   - note that your app must bind puma to `unix:///var/run/puma/puma.sock` as explained in the section on Mina
 
 # TODO
 
