@@ -253,6 +253,10 @@ script or some other solution, e.g. Capistrano.
 
 What your deployment scripts must do in order to work:
 
+0. Deploy as `admin`, the user created by Ansible. The credentials
+   for this user are the ones you set up in part 3 of "Adding a new
+   environment".
+
 1. Put the deployable code into `{{app_directory}}/current`, where
    app_directory is defined in the Ansible configuration file
 
