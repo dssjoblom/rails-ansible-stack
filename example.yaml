@@ -16,3 +16,6 @@ hosts:
     rails_db_password: example
     timezone: Europe/Helsinki
     rails_master_key: SECRET
+    additional_rails_variables: |
+      export FOO=BAR
+      export BAX=BAZ

@@ -287,36 +287,39 @@
 
     - name: Setup environment variables for running Rails
       blockinfile:
-        dest: "/etc/bash.bashrc"
+        dest: "/home/admin/rails-env-variables"
         block: |
           export RAILS_ENV={{rails_env}}
           export WEB_CONCURRENCY={{web_concurrency}}
           export RAILS_MASTER_KEY={{rails_master_key}}
           export RAILS_DATABASE_PASSWORD={{rails_db_password}}
+          {{additional_rails_variables}}
         marker: '# {mark} ANSIBLE MANAGED BLOCK'
         insertbefore: BOF
-        create: no
+        mode: u+rw,g-rw,o-rw
+        owner: admin
+        group: admin
+        create: yes
 
     - name: Setup environment variables for running Rails (2)
       blockinfile:
-        dest: "/etc/profile"
+        dest: "/home/admin/.bash_profile"
         block: |
-          export RAILS_ENV={{rails_env}}
-          export WEB_CONCURRENCY={{web_concurrency}}
-          export RAILS_MASTER_KEY={{rails_master_key}}
-          export RAILS_DATABASE_PASSWORD={{rails_db_password}}
+          [[ -s "$HOME/rails-env-variables" ]] && source "$HOME/rails-env-variables"
         marker: '# {mark} ANSIBLE MANAGED BLOCK'
         insertbefore: BOF
-        create: no
+        owner: admin
+        group: admin
+        create: yes
 
-    - name: Make sudo preserve Rails environment
-      lineinfile:
-        path: /etc/sudoers
-        state: present
-        regexp: '^Defaults(\s+)env_keep'
-        insertafter: '^Defaults(\s+)env_reset'
-        line: 'Defaults        env_keep += "RAILS_ENV WEB_CONCURRENCY RAILS_MASTER_KEY RAILS_DATABASE_PASSWORD"'
-        validate: '/usr/sbin/visudo -cf %s'
+    # - name: Make sudo preserve Rails environment
+    #   lineinfile:
+    #     path: /etc/sudoers
+    #     state: present
+    #     regexp: '^Defaults(\s+)env_keep'
+    #     insertafter: '^Defaults(\s+)env_reset'
+    #     line: 'Defaults        env_keep += "RAILS_ENV WEB_CONCURRENCY RAILS_MASTER_KEY RAILS_DATABASE_PASSWORD"'
+    #     validate: '/usr/sbin/visudo -cf %s'
 
     - name: Setup Puma as service
       template:

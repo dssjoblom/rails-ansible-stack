@@ -12,14 +12,9 @@ Type=simple
 User=admin
 WorkingDirectory={{app_directory}}/current
 RuntimeDirectory=puma # /var/run/puma
-Environment=RAILS_ENV={{rails_env}} WEB_CONCURRENCY={{web_concurrency}} RAILS_MASTER_KEY={{rails_master_key}} RAILS_DATABASE_PASSWORD={{rails_db_password}}
 
 # Path to PID file so that systemd knows which is the master process
 PIDFile=/run/puma/puma.pid
-
-# The commands to start/restart/stop Puma (`which bundle` to figure out correct
-# path, create wrappers if necessary by saying
-# rvm wrapper original_path_to_bundle)
 
 # Restart is done as restart, not phased-restart.
 # phased-restart is possible, but requires WEB_CONCURRENCY >= 2,

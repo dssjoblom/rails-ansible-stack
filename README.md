@@ -2,11 +2,9 @@ This project is a set of Ansible playbooks for setting up a full Rails
 deployment stack (Nginx+Puma with LetsEncrypt, Sidekiq, PostgreSQL,
 Redis, and other commonly used services) on Ubuntu 22.04.
 
-The playbooks assume that Rails will be deployed with Mina, but you
-could could use e.g. Capistrano or a custom script as well. For
-non-Mina deployment scripts, the Rails app should be placed in
-{{app_directory}}/current, and the deployer should deploy as user
-admin (created by the playbooks).
+Additionally, this project contains a Mina configuration that can be
+used to deploy the Rails application, but you can also use custom
+scripts or other tools, e.g. Capistrano.
 
 Bugs
 ----
@@ -116,6 +114,7 @@ Adding a new environment
      environment variable)
    * timezone - timezone to set on server
    * rails_master_key - Rails master key (from config/master.key, generate with e.g. rails:credentials:edit)
+   * additional_rails_variables - additional variables to export. Write this in shell syntax (export VAR=VAL)
 
    Test the environment:
 
@@ -183,12 +182,24 @@ After this, setup is very simple. Run the following command and wait:
 The script will take some time to run, from 3 to 15 minutes usually.
 
 The environment is now properly set up, the next step is to set up app
-deployment.
+deployment. If you want to use the included Mina scripts, see
+#app-deployment-with-mina. For custom scripts or another another
+solution, like Capistrano, see #app-deployment-with-other-scripts.
 
 App deployment with Mina
 ------------------------
 
 This section assumes you will use the scripts in mina/.
+
+Add Mina to your Gemfile:
+
+```ruby
+group :development do
+  # Deploy with mina (with staging env support)
+  gem 'mina'
+  gem 'mina-multistage'
+end
+```
 
 Copy the scripts to your Rails application's config/ directory:
 
@@ -249,6 +260,30 @@ For example, to deploy to production:
 When you make changes, simply push them to Git and run `mina ENV
 deploy` again. That's it!
 
+App deployment with other scripts
+---------------------------------
+
+This section applies if you are deploying your app with a custom
+script or some other solution, e.g. Capistrano.
+
+What your deployment scripts must do in order to work:
+
+1. Put the deployable code into `{{app_directory}}/current`, where
+   app_directory is defined in the Ansible configuration file
+
+2. Run any generic tasks needed before the app can be started,
+   like asset compilation
+
+3. Use systemd to manage puma and sidekiq, e.g. to start them,
+   do:
+
+   - service puma start
+   - service sidekiq restart
+
+4. Restart nginx so that the new puma socket is used:
+
+   - service nginx restart
+
 TODO
 ----
 
@@ -258,18 +293,16 @@ General features:
 - harden ssh automatically (don't allow password login etc)
 - make nginx/rails error pages configurable
 - add license
-- make sure letsencrypt renewal actually works
-  * https://certbot.eff.org/instructions?ws=nginx&os=ubuntufocal&tab=standard
 - puma service restart behavior
 - puma when not using unix domain sockets
 - lint the playbooks
 - postgresql user/db creation
 - refactor the big site.yml playbook
 - fix Mina + Bundler deprecation warnings
-- figure out good way of handling environment variables
 - allow specification of software versions
-- move github key setup into site.yml (instead
-  of listing it as a manual step here)
+- move github key setup into site.yml (instead of listing it as a manual step here)
+- check Redis eviction policy
+- make sure the Mina script actually works with multiple envs
 
 Move the following playbook content into this Git repo as well:
 
