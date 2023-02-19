@@ -7,15 +7,16 @@ hosts:
     certbot_domains: example.com
     admin_email: admin@example.com
     rails_env: production
-    web_concurrency: 2
     ruby_version: 3.1.3
     bundler_version: 2.4.6
     app_directory: /var/www/example
     disallow_robots: 'no'
     rails_db_username: example
-    rails_db_password: example
+    rails_db_password: SECRET_PASSWORD
     timezone: Europe/Helsinki
     rails_master_key: SECRET
     additional_rails_variables: |
+      export RAILS_MAX_THREADS=10
+      export WEB_CONCURRENCY=2
       export FOO=BAR
       export BAX=BAZ

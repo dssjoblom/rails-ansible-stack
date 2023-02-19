@@ -93,7 +93,6 @@ Install Ansible:
 (e.g. host.com,www.host.com)
    * admin_email - email address of server admin (for Certbot notifications)
    * rails_env - Rails environment
-   * web_concurrency - Rails concurrency (puma)
    * ruby_version - Ruby version (should be same as in Gemfile)
    * bundler_version - bundler version (should be same as in Gemfile.lock)
    * app_directory - directory app is deployed to (e.g. /var/www/myapp)
