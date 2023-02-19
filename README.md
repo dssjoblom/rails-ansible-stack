@@ -6,8 +6,7 @@ Additionally, this project contains a Mina configuration that can be
 used to deploy the Rails application, but you can also use custom
 scripts or other tools, e.g. Capistrano.
 
-Good to know
-------------
+# Good to know
 
 UFW is not set up because of an Ubuntu bug:
 
@@ -28,8 +27,7 @@ UFW is not set up because of an Ubuntu bug:
 If you fork this repo, make sure you do not commit
 the SSH keys that you put into envs/.
 
-Preliminaries
--------------
+# Preliminaries
 
 On the client machine (e.g. computer used for development):
 
@@ -41,8 +39,7 @@ Install Ansible:
 
 `pip3 install ansible`
 
-Adding a new environment
-------------------------
+# Adding a new environment
 
 0. Add a DNS record for the host, for setting up SSL
 
@@ -142,8 +139,7 @@ Adding a new environment
    environment, not the key you pass to ansible-playbook
    --private-key. The latter is for the user you created in step 1.
 
-Running the playbooks
----------------------
+# Running the playbooks
 
 Run a playbook using:
 
@@ -159,8 +155,7 @@ The playbooks should be run before attempting to deploy Rails to the
 server with e.g. Mina or Capistrano, and they should be run in the
 listed order.
 
-Installing everything on a new server
--------------------------------------
+# Installing everything on a new server
 
 This section assumes you have configured the environment file as
 specified in "Adding a new environment". If the server is not
@@ -179,8 +174,7 @@ deployment. If you want to use the included Mina scripts, see
 #app-deployment-with-mina. For custom scripts or another another
 solution, like Capistrano, see #app-deployment-with-other-scripts.
 
-App deployment with Mina
-------------------------
+# App deployment with Mina
 
 This section assumes you will use the scripts in mina/.
 
@@ -253,8 +247,7 @@ For example, to deploy to production:
 When you make changes, simply push them to Git and run `mina ENV
 deploy` again. That's it!
 
-App deployment with other scripts
----------------------------------
+# App deployment with other scripts
 
 This section applies if you are deploying your app with a custom
 script or some other solution, e.g. Capistrano.
@@ -277,8 +270,7 @@ What your deployment scripts must do in order to work:
 
    - service nginx restart
 
-TODO
-----
+# TODO
 
 General features:
 
