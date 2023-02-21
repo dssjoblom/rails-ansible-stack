@@ -137,6 +137,10 @@ task install_js: :remote_environment do
   command 'yarn install'
 end
 
+task tmp_cache_clear: :remote_environment do
+  command 'bundle exec rake tmp:cache:clear'
+end
+
 # Store our current revision so that it is visible when on-site
 set :deployed_revision, %x[git rev-parse #{fetch(:branch)}].strip
 
@@ -152,6 +156,7 @@ task :deploy do
     invoke :fix_secrets
     invoke :'bundle:install'
     invoke :'rails:db_migrate'
+    invoke :tmp_cache_clear
     invoke :install_js
     invoke :compile_assets
     invoke :'deploy:cleanup'
