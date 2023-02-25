@@ -278,16 +278,11 @@ What your deployment scripts must do in order to work:
 General features:
 
 - harden ssh automatically (don't allow password login etc)
+- configure and run fail2ban automatically
 - make nginx/rails error pages configurable
 - puma service restart behavior
-- lint the playbooks
-- postgresql user/db creation
 - refactor the big site.yml playbook
-- allow specification of software versions
-- move github key setup into site.yml (instead of listing it as a manual step here)
 - check Redis eviction policy
-- give admin role automatic use of specific services,
-  so deploy scripts don't have to sudo
 
 Move the following playbook content into this Git repo as well:
 

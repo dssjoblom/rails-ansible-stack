@@ -3,14 +3,14 @@
 ---
 - hosts: rails
   remote_user: root
-  become: yes
+  become: true
 
   tasks:
 
     - name: Upgrade all packages to the latest version
       apt:
-        upgrade: yes
-        update_cache: yes
+        upgrade: true
+        update_cache: true
 
     - name: Make sure we have a 'wheel' group
       group:
@@ -29,9 +29,9 @@
       user:
         name: admin
         groups: wheel
-        append: yes
+        append: true
         state: present
-        createhome: yes
+        createhome: true
         shell: /bin/bash
 
     - name: Set up authorized keys for the admin user
@@ -68,19 +68,19 @@
                'wget',
                'apt-transport-https',
                'acl',
-               'git',]
+               'git']
 
     - name: Download RVM
       get_url:
         url: https://get.rvm.io
         dest: /home/admin/rvm.sh
-      become: yes
+      become: true
       become_user: admin
       become_method: sudo
 
     - name: Install RVM
       ansible.builtin.command: /bin/bash /home/admin/rvm.sh
-      become: yes
+      become: true
       become_user: admin
       become_method: sudo
 
@@ -89,13 +89,13 @@
         cd /home/admin
         source ~/.rvm/scripts/rvm
         /home/admin/.rvm/bin/rvm install {{ruby_version}}
-      become: yes
+      become: true
       become_user: admin
       become_method: sudo
 
     - name: Set default Ruby
       command: /home/admin/.rvm/bin/rvm alias create default ruby-{{ruby_version}}
-      become: yes
+      become: true
       become_user: admin
       become_method: sudo
 
@@ -140,7 +140,7 @@
     - name: Install Redis server + tools
       apt:
         name: ['redis-server', 'redis-tools']
-        update_cache: yes
+        update_cache: true
 
     - name: Configure Redis (1)
       shell: |
@@ -156,7 +156,7 @@
     - name: Install Fail2Ban
       apt:
         name: ['fail2ban']
-        update_cache: yes
+        update_cache: true
 
     # UFW does not always work: https://bugs.launchpad.net/ubuntu/+source/ufw/+bug/1921350
     # - name: Configure UFW
@@ -176,10 +176,10 @@
     - name: Configure Limits (2)
       community.general.pam_limits: "domain=* limit_type={{item.limit_type}} limit_item={{item.limit_item}} value={{item.value}}"
       with_items:
-        - { limit_type: "soft", limit_item: "nproc", value: 65535 }
-        - { limit_type: "hard", limit_item: "nproc", value: 65535 }
-        - { limit_type: "soft", limit_item: "nofile", value: 65535 }
-        - { limit_type: "hard", limit_item: "nofile", value: 65535 }
+        - {limit_type: "soft", limit_item: "nproc", value: 65535}
+        - {limit_type: "hard", limit_item: "nproc", value: 65535}
+        - {limit_type: "soft", limit_item: "nofile", value: 65535}
+        - {limit_type: "hard", limit_item: "nofile", value: 65535}
 
     - name: Set up Sidekiq as service
       template:
@@ -250,7 +250,7 @@
     - name: Setup Certbot with Nginx (1)
       apt:
         name: ['certbot', 'python3-certbot-nginx']
-        update_cache: yes
+        update_cache: true
 
     - name: Setup Certbot with Nginx (2)
       shell: |
@@ -298,7 +298,7 @@
         mode: u+rw,g-rw,o-rw
         owner: admin
         group: admin
-        create: yes
+        create: true
 
     - name: Setup environment variables for running Rails (2)
       blockinfile:
@@ -309,7 +309,7 @@
         insertbefore: BOF
         owner: admin
         group: admin
-        create: yes
+        create: true
 
     # - name: Make sudo preserve Rails environment
     #   lineinfile:
