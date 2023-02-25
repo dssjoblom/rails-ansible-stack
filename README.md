@@ -181,9 +181,8 @@ Add Mina to your Gemfile:
 
 ```ruby
 group :development do
-  # Deploy with mina (with staging env support)
+  # Deploy with mina
   gem 'mina'
-  gem 'mina-multistage'
 end
 ```
 
@@ -195,7 +194,7 @@ Copy the scripts to your Rails application's config/ directory:
 
 Modify the config/deploy/production.rb script to suite your needs. You
 can also add other environments into config/deploy,
-e.g. config/deploy/staging.rb.
+e.g. config/deploy/staging.rb, they will be picked up automatically.
 
 Next, make sure Puma is binding to a Unix domain socket (for nginx) in
 config/puma.rb:
@@ -284,11 +283,9 @@ General features:
 - lint the playbooks
 - postgresql user/db creation
 - refactor the big site.yml playbook
-- fix Mina + Bundler deprecation warnings
 - allow specification of software versions
 - move github key setup into site.yml (instead of listing it as a manual step here)
 - check Redis eviction policy
-- make sure the Mina script actually works with multiple envs
 - give admin role automatic use of specific services,
   so deploy scripts don't have to sudo
 

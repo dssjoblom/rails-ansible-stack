@@ -1,11 +1,13 @@
 require 'mina/bundler'
 require 'mina/rails'
 require 'mina/git'
-require 'mina/rvm'    # for rvm support. (https://rvm.io)
-require 'mina/multistage'
+require 'mina/rvm'
 
 Dir.glob('config/deploy/*.rb').each do |file|
-  require_relative "deploy/#{File.basename(file)}"
+  env = File.basename file, '.rb'
+  task env.to_sym do
+    load file
+  end
 end
 
 # Shared dirs and files will be symlinked into the app-folder by the
@@ -44,13 +46,15 @@ namespace :puma do
   desc 'Start puma'
   task start: :remote_environment do
     command 'sudo service puma start'
+  rescue StandardError => e
+    puts "Failed to start puma: #{e}."
   end
 
   desc 'Stop puma'
   task stop: :remote_environment do
     command 'sudo service puma stop'
   rescue StandardError => e
-    puts "Failed to stop puma: #{e}\n."
+    puts "Failed to stop puma: #{e}."
   end
 
   desc 'Restart puma'
@@ -58,7 +62,15 @@ namespace :puma do
     command 'sudo service puma stop'
     command 'sudo service puma start'
   rescue StandardError => e
-    puts "Failed to restart puma: #{e}\nAssuming not started."
+    puts "Failed to restart puma: #{e}."
+  end
+end
+
+namespace :sidekiq do
+  task restart: :remote_environment do
+    command 'sudo service sidekiq restart'
+  rescue StandardError => e
+    puts "Failed to restart sidekiq: #{e}."
   end
 end
 
@@ -67,6 +79,8 @@ namespace :nginx do
 
   task restart: :remote_environment do
     command 'sudo service nginx restart'
+  rescue StandardError => e
+    puts "Failed to restart nginx: #{e}."
   end
 end
 
@@ -85,23 +99,11 @@ task :upload_secrets do
   end
 end
 
-task :restart_sidekiq do
-  command 'sudo service sidekiq restart'
-end
-
-task :compile_assets do
-  command 'bundle exec rake assets:precompile'
-end
-
-task :setup_db_task do
-  command 'bundle exec rake db:setup'
-end
-
 task :reindex_all do
   deploy do
     invoke :'git:clone'
     invoke :'deploy:link_shared_paths'
-    invoke :'bundle:install'
+    invoke :bundle_install
     invoke :'deploy:cleanup'
   end
 end
@@ -115,7 +117,7 @@ task :init_deploy do
     # instance of your project.
     invoke :'git:clone'
     invoke :'deploy:link_shared_paths'
-    invoke :'bundle:install'
+    invoke :bundle_install
     invoke :'deploy:cleanup'
   end
 end
@@ -127,7 +129,7 @@ task :setup_db do
   deploy do
     invoke :'git:clone'
     invoke :'deploy:link_shared_paths'
-    invoke :'bundle:install'
+    invoke :bundle_install
     invoke :setup_db_task
     invoke :'deploy:cleanup'
   end
@@ -137,12 +139,28 @@ task install_js: :remote_environment do
   command 'yarn install'
 end
 
-task tmp_cache_clear: :remote_environment do
-  command 'bundle exec rake tmp:cache:clear'
+set :rails_task_prefix, -> { "source /home/admin/rails-env-variables && #{fetch(:rails)}" }
+
+task compile_assets: :remote_environment do
+  command "#{fetch(:rails_task_prefix)} assets:precompile"
 end
 
-# Store our current revision so that it is visible when on-site
-set :deployed_revision, %x[git rev-parse #{fetch(:branch)}].strip
+task tmp_cache_clear: :remote_environment do
+  command "#{fetch(:rails_task_prefix)} tmp:cache:clear"
+end
+
+task migrate_db: :remote_environment do
+  command "#{fetch(:rails_task_prefix)} db:migrate"
+end
+
+task :setup_db_task do
+  command "#{fetch(:rails_task_prefix)} db:setup"
+end
+
+task :bundle_install do
+  command "bundle config set --local without 'development test'"
+  command "bundle install"
+end
 
 desc 'Deploys the current version to the server.'
 task :deploy do
@@ -154,19 +172,20 @@ task :deploy do
     invoke :'git:clone'
     invoke :'deploy:link_shared_paths'
     invoke :fix_secrets
-    invoke :'bundle:install'
-    invoke :'rails:db_migrate'
-    invoke :tmp_cache_clear
+    invoke :bundle_install
+    invoke :migrate_db
     invoke :install_js
     invoke :compile_assets
+    invoke :tmp_cache_clear
     invoke :'deploy:cleanup'
 
     on :launch do
+      set :deployed_revision, %x[git rev-parse #{fetch(:branch)}].strip
       command "echo '#{fetch(:deployed_revision)}' > #{fetch(:current_path)}/REVISION"
       command "echo '#{fetch(:branch)}' >> #{fetch(:current_path)}/REVISION"
 
       in_path(fetch(:current_path)) do
-        invoke :restart_sidekiq
+        invoke :'sidekiq:restart'
         invoke :'puma:restart'
         invoke :'nginx:restart'
       end
