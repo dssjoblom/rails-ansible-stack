@@ -11,7 +11,7 @@ After=network.target
 Type=simple
 User=admin
 WorkingDirectory={{app_directory}}/current
-RuntimeDirectory=puma # /var/run/puma
+RuntimeDirectory=/var/run/puma
 
 # Path to PID file so that systemd knows which is the master process
 PIDFile=/run/puma/puma.pid
