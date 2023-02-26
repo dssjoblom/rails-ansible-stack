@@ -281,7 +281,6 @@ General features:
 - configure and run fail2ban automatically
 - puma service restart behavior
 - refactor the big site.yml playbook
-- check Redis eviction policy
 
 Move the following playbook content into this Git repo as well:
 

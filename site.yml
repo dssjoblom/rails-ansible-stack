@@ -153,6 +153,13 @@
         insertafter: '^#appendonly '
         line: appendonly yes
 
+    - name: Configure Redis (3)
+      ansible.builtin.lineinfile:
+        path: /etc/redis/redis.conf
+        regexp: '^maxmemory-policy '
+        insertafter: '^# maxmemory-policy '
+        line: maxmemory-policy noeviction
+
     - name: Install Fail2Ban
       apt:
         name: ['fail2ban']
