@@ -332,3 +332,7 @@
         src: templates/puma.service.j2
         dest: /etc/systemd/system/puma.service
         mode: "u=rw,g=r,o=r"
+
+    - name: Reload systemd services
+      shell: |
+        systemctl daemon-reload
