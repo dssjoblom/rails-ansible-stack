@@ -188,7 +188,7 @@ http {
     }
 
     # "block" hacking attempts
-    location ~ (\.php$|\.aspx$|\.asp$|\.htm$) {
+    location ~ (\.php$|\.aspx$|\.asp$|\.htm$|\.yaml$|\.yml$) {
       return 404;
     }
   }
