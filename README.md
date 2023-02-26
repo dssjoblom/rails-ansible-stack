@@ -280,6 +280,7 @@ General features:
 - harden ssh automatically (don't allow password login etc)
 - refactor the big site.yml playbook
 - give admin user more restricted sudo rights
+- systemd puma restart behavior
 
 Move the following playbook content into this Git repo as well:
 
