@@ -165,6 +165,16 @@
         name: ['fail2ban']
         update_cache: true
 
+    - name: Configure Fail2Ban
+      template:
+        src: templates/jail.local.j2
+        dest: /etc/fail2ban/jail.local
+        mode: "u=rw,g=r,o=r"
+
+    - name: Enable and start Fail2Ban
+      shell: |
+        systemctl enable --now fail2ban
+
     # UFW does not always work: https://bugs.launchpad.net/ubuntu/+source/ufw/+bug/1921350
     # - name: Configure UFW
     #   shell: |

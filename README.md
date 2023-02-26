@@ -278,7 +278,6 @@ What your deployment scripts must do in order to work:
 General features:
 
 - harden ssh automatically (don't allow password login etc)
-- configure and run fail2ban automatically
 - refactor the big site.yml playbook
 - give admin user more restricted sudo rights
 
