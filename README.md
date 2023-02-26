@@ -279,7 +279,6 @@ General features:
 
 - harden ssh automatically (don't allow password login etc)
 - configure and run fail2ban automatically
-- make nginx/rails error pages configurable
 - puma service restart behavior
 - refactor the big site.yml playbook
 - check Redis eviction policy
