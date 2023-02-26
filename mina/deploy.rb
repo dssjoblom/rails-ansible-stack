@@ -59,7 +59,7 @@ namespace :puma do
 
   desc 'Restart puma'
   task restart: :remote_environment do
-    command 'sudo service puma restart'
+    command 'sudo systemctl reload-or-restart puma'
   rescue StandardError => e
     puts "Failed to restart puma: #{e}."
   end
