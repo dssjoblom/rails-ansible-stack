@@ -279,7 +279,6 @@ General features:
 
 - harden ssh automatically (don't allow password login etc)
 - configure and run fail2ban automatically
-- puma service restart behavior
 - refactor the big site.yml playbook
 - give admin user more restricted sudo rights
 
