@@ -6,6 +6,10 @@
 Description=Puma HTTP Server
 After=network.target
 
+# Limit on restarts
+StartLimitIntervalSec=500
+StartLimitBurst=5
+
 [Service]
 
 Type=simple
@@ -25,9 +29,9 @@ ExecStart  = /bin/bash -lc 'bundle exec pumactl start -F config/puma.rb'
 # ExecReload = /bin/bash -lc 'bundle exec pumactl restart -F config/puma.rb -P /run/puma/puma.pid'
 ExecStop   = /bin/bash -lc 'bundle exec pumactl stop -F config/puma.rb'
 
-# Should systemd restart puma?
-#Restart=always
-#KillMode=process
+# if we crash, restart
+RestartSec=5
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target

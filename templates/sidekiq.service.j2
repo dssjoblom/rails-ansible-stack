@@ -2,6 +2,10 @@
 Description=sidekiq
 After=syslog.target network.target redis.service
 
+# Limit on restarts
+StartLimitIntervalSec=500
+StartLimitBurst=5
+
 [Service]
 Type=simple
 WorkingDirectory={{app_directory}}/current
@@ -11,7 +15,7 @@ Group=admin
 UMask=0002
 
 # if we crash, restart
-RestartSec=1
+RestartSec=5
 Restart=on-failure
 
 # Output goes to log file

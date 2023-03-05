@@ -211,6 +211,11 @@
         hour: "15"
         job: "/bin/systemctl restart sidekiq"
 
+    - name: Enable Sidekiq service
+      shell: |
+        systemctl daemon-reload
+        systemctl enable sidekiq
+
     # - name: Configure pg_hba.conf
     #   ansible.builtin.lineinfile:
     #     path: /etc/postgresql/14/main/pg_hba.conf
@@ -343,6 +348,7 @@
         dest: /etc/systemd/system/puma.service
         mode: "u=rw,g=r,o=r"
 
-    - name: Reload systemd services
+    - name: Enable puma service
       shell: |
         systemctl daemon-reload
+        systemctl enable puma
