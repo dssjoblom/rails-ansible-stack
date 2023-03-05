@@ -120,7 +120,7 @@ Install Ansible:
         "ping": "pong"
     }
    ```
-3. Create an SSH key for the admin user for the environment:
+3. Create an SSH key for the appdeployer user (created by Ansible) for the environment:
 
    Locally, run:
 
@@ -218,7 +218,7 @@ Run this command once for each env:
 Next, you need to copy over an ssh key for your Github (or other git)
 repository to the host (matching URL in config/deploy/ENV.rb):
 
-`scp PATH_TO_KEY admin@HOST:/home/admin/.ssh`
+`scp PATH_TO_KEY appdeployer@HOST:/home/appdeployer/.ssh`
 
 Now, set up the database and other things for the project (do this
 once for each environment):
@@ -252,7 +252,7 @@ script or some other solution, e.g. Capistrano.
 
 What your deployment scripts must do in order to work:
 
-0. Deploy as `admin`, the user created by Ansible. The credentials
+0. Deploy as `appdeployer`, the user created by Ansible. The credentials
    for this user are the ones you set up in part 3 of "Adding a new
    environment".
 
@@ -279,7 +279,6 @@ General features:
 
 - harden ssh automatically (don't allow password login etc)
 - refactor the big site.yml playbook
-- give admin user more restricted sudo rights
 - implement https://github.com/jgmdev/ddos-deflate or something similar
 
 Move the following playbook content into this Git repo as well:

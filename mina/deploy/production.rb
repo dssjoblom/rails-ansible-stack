@@ -16,6 +16,6 @@ set :rails_env, 'production'
 #   user - Username in the server to SSH to
 #   port - SSH port number (default is 22)
 #   forward_agent - use SSH forward agent
-set :user, 'admin'
+set :user, 'appdeployer'
 set :port, '22'
 set :forward_agent, true

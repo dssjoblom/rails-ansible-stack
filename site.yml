@@ -12,37 +12,96 @@
         upgrade: true
         update_cache: true
 
-    - name: Make sure we have a 'wheel' group
+    - name: Make sure we have a 'appdeployer' group
       group:
-        name: wheel
+        name: appdeployer
         state: present
 
-    - name: Allow 'wheel' group to have passwordless sudo
-      lineinfile:
-        dest: /etc/sudoers
-        state: present
-        regexp: '^%wheel'
-        line: '%wheel ALL=(ALL) NOPASSWD: ALL'
-        validate: 'visudo -cf %s'
-
-    - name: Create "admin" user (with sudo)
+    - name: Create "appdeployer" user (with sudo)
       user:
-        name: admin
-        groups: wheel
+        name: appdeployer
+        groups: appdeployer
         append: true
         state: present
         createhome: true
         shell: /bin/bash
 
-    - name: Set up authorized keys for the admin user
-      authorized_key: user=admin key="{{item}}"
+    - name: Set up authorized keys for the appdeployer user
+      authorized_key: user=appdeployer key="{{item}}"
       with_file:
         - "envs/{{env_name}}/id_ed25519.pub"
 
     # https://github.com/camptocamp/puppet-accounts/issues/35
-    - name: Fix SSH passwordless login for admin user
+    - name: Fix SSH passwordless login for appdeployer user
       shell: |
-        usermod -p '*' admin
+        usermod -p '*' appdeployer
+
+    - name: Allow 'appdeployer' group to have passwordless sudo for Ruby services
+      blockinfile:
+        dest: "/etc/sudoers"
+        block: |
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl start sidekiq
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl stop sidekiq
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl restart sidekiq
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl reload sidekiq
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl reload-or-restart sidekiq
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl status sidekiq
+
+          %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service sidekiq start
+          %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service sidekiq stop
+          %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service sidekiq restart
+          %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service sidekiq status
+
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl start puma
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl stop puma
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl restart puma
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl reload puma
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl reload-or-restart puma
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl status puma
+
+          %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service puma start
+          %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service puma stop
+          %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service puma restart
+          %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service puma status
+
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl start nginx
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl stop nginx
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl restart nginx
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl reload nginx
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl reload-or-restart nginx
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl status nginx
+
+          %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service nginx start
+          %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service nginx stop
+          %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service nginx restart
+          %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service nginx status
+
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl start redis-server
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl stop redis-server
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl restart redis-server
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl reload redis-server
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl reload-or-restart redis-server
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl status redis-server
+
+          %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service redis start
+          %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service redis stop
+          %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service redis restart
+          %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service redis status
+
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl start postgresql
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl stop postgresql
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl restart postgresql
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl reload postgresql
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl reload-or-restart postgresql
+          %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl status postgresql
+
+          %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service postgresql start
+          %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service postgresql stop
+          %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service postgresql restart
+          %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service postgresql status
+        marker: '# {mark} ANSIBLE MANAGED BLOCK'
+        insertbefore: EOF
+        validate: 'visudo -cf %s'
 
     - name: Set timezone
       community.general.timezone:
@@ -73,34 +132,34 @@
     - name: Download RVM
       get_url:
         url: https://get.rvm.io
-        dest: /home/admin/rvm.sh
+        dest: /home/appdeployer/rvm.sh
       become: true
-      become_user: admin
+      become_user: appdeployer
       become_method: sudo
 
     - name: Install RVM
-      ansible.builtin.command: /bin/bash /home/admin/rvm.sh
+      ansible.builtin.command: /bin/bash /home/appdeployer/rvm.sh
       become: true
-      become_user: admin
+      become_user: appdeployer
       become_method: sudo
 
     - name: Install Ruby
       shell: |
-        cd /home/admin
+        cd /home/appdeployer
         source ~/.rvm/scripts/rvm
-        /home/admin/.rvm/bin/rvm install {{ruby_version}}
+        /home/appdeployer/.rvm/bin/rvm install {{ruby_version}}
       become: true
-      become_user: admin
+      become_user: appdeployer
       become_method: sudo
 
     - name: Set default Ruby
-      command: /home/admin/.rvm/bin/rvm alias create default ruby-{{ruby_version}}
+      command: /home/appdeployer/.rvm/bin/rvm alias create default ruby-{{ruby_version}}
       become: true
-      become_user: admin
+      become_user: appdeployer
       become_method: sudo
 
     - name: Install bundler
-      command: "sudo -iu admin gem install bundler:{{bundler_version}}"
+      command: "sudo -iu appdeployer gem install bundler:{{bundler_version}}"
 
     - name: Install Node from nodesource.com
       shell: |
@@ -159,6 +218,11 @@
         regexp: '^maxmemory-policy '
         insertafter: '^# maxmemory-policy '
         line: maxmemory-policy noeviction
+
+    - name: Enable Redis service
+      shell: |
+        systemctl daemon-reload
+        systemctl enable redis-server
 
     - name: Install Fail2Ban
       apt:
@@ -238,6 +302,11 @@
       shell: |
         service postgresql restart
 
+    - name: Enable postgresql service
+      shell: |
+        systemctl daemon-reload
+        systemctl enable postgresql
+
     - name: Create rails DB user with privileges
       postgresql_user:
         name: "{{rails_db_username}}"
@@ -287,6 +356,11 @@
           true
         fi
 
+    - name: Enable nginx service
+      shell: |
+        systemctl daemon-reload
+        systemctl enable nginx
+
     - name: Setup app dirs
       template:
         src: "templates/create-app-dirs.service.j2"
@@ -309,7 +383,7 @@
 
     - name: Setup environment variables for running Rails
       blockinfile:
-        dest: "/home/admin/rails-env-variables"
+        dest: "/home/appdeployer/rails-env-variables"
         block: |
           export RAILS_ENV={{rails_env}}
           export RAILS_MASTER_KEY={{rails_master_key}}
@@ -318,29 +392,20 @@
         marker: '# {mark} ANSIBLE MANAGED BLOCK'
         insertbefore: BOF
         mode: u+rw,g-rw,o-rw
-        owner: admin
-        group: admin
+        owner: appdeployer
+        group: appdeployer
         create: true
 
     - name: Setup environment variables for running Rails (2)
       blockinfile:
-        dest: "/home/admin/.bash_profile"
+        dest: "/home/appdeployer/.bash_profile"
         block: |
           [[ -s "$HOME/rails-env-variables" ]] && source "$HOME/rails-env-variables"
         marker: '# {mark} ANSIBLE MANAGED BLOCK'
         insertbefore: BOF
-        owner: admin
-        group: admin
+        owner: appdeployer
+        group: appdeployer
         create: true
-
-    # - name: Make sudo preserve Rails environment
-    #   lineinfile:
-    #     path: /etc/sudoers
-    #     state: present
-    #     regexp: '^Defaults(\s+)env_keep'
-    #     insertafter: '^Defaults(\s+)env_reset'
-    #     line: 'Defaults        env_keep += "RAILS_ENV WEB_CONCURRENCY RAILS_MASTER_KEY RAILS_DATABASE_PASSWORD"'
-    #     validate: '/usr/sbin/visudo -cf %s'
 
     - name: Setup Puma as service
       template:

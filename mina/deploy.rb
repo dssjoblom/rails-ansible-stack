@@ -138,7 +138,7 @@ task install_js: :remote_environment do
   command 'yarn install'
 end
 
-set :rails_task_prefix, -> { "source /home/admin/rails-env-variables && #{fetch(:rails)}" }
+set :rails_task_prefix, -> { "source /home/appdeployer/rails-env-variables && #{fetch(:rails)}" }
 
 task compile_assets: :remote_environment do
   command "#{fetch(:rails_task_prefix)} assets:precompile"

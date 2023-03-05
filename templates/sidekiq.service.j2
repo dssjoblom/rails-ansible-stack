@@ -10,8 +10,8 @@ StartLimitBurst=5
 Type=simple
 WorkingDirectory={{app_directory}}/current
 ExecStart=/bin/bash -lc 'bundle exec sidekiq -e {{rails_env}}'
-User=admin
-Group=admin
+User=appdeployer
+Group=appdeployer
 UMask=0002
 
 # if we crash, restart
