@@ -280,6 +280,8 @@ General features:
 - harden ssh automatically (don't allow password login etc)
 - refactor the big site.yml playbook
 - implement https://github.com/jgmdev/ddos-deflate or something similar
+- install newer Redis (Ubuntu 22.04 default doesn't work with Sidekiq 7)
+- puma phased restart (reload)
 
 Move the following playbook content into this Git repo as well:
 

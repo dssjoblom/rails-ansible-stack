@@ -1,6 +1,6 @@
 [Unit]
 Description=sidekiq
-After=syslog.target network.target redis.service
+After=syslog.target network.target redis.service postgresql.service
 
 # Limit on restarts
 StartLimitIntervalSec=500

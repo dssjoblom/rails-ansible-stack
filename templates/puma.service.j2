@@ -4,7 +4,7 @@
 
 [Unit]
 Description=Puma HTTP Server
-After=network.target
+After=syslog.target network.target postgresql.service redis.service
 
 # Limit on restarts
 StartLimitIntervalSec=500
