@@ -1,0 +1,46 @@
+# Nginx configuration for Letsencrypt authentication. This
+# configuration will be used before we have the SSL certs.
+
+# this sets the user nginx will run as,
+# and the number of worker processes
+user root root;
+worker_processes 1;
+
+# setup where nginx will log errors to
+# and where the nginx process id resides
+error_log  /var/log/nginx/error.log;
+pid        /var/run/nginx.pid;
+
+# Regex compilation...
+pcre_jit on;
+
+events {
+  worker_connections  1024;
+  multi_accept on;
+  # set accept_mutex to on if you have more than 1 worker_processes
+  accept_mutex off;
+}
+
+http {
+  server_tokens off;
+
+  include /etc/nginx/mime.types;
+
+  default_type application/octet-stream;
+  access_log /tmp/nginx.access.log combined;
+  error_log /var/log/nginx/error.log;
+
+  # Redirect all http traffic to https (except Letsencrypt challenges)
+  server {
+    listen         80;
+    server_name    {{nginx_server_name}};
+
+    location /.well-known/acme-challenge {
+      root /usr/share/nginx/html;
+    }
+
+    location / {
+      return 301 https://$server_name$request_uri;
+    }
+  }
+}

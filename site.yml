@@ -332,11 +332,17 @@
       shell: |
         systemctl restart systemd-journald
 
-    - name: Configure Nginx
+    - name: Reconfigure Nginx for Certbot setup (1)
+      stat:
+        path: /etc/letsencrypt/live/HAVECERTS
+      register: have_certs
+
+    - name: Reconfigure Nginx for Certbot setup (2)
       template:
-        src: templates/nginx.conf.j2
+        src: templates/nginx.http.conf.j2
         dest: /etc/nginx/nginx.conf
         mode: "u=rw,g=r,o=r"
+      when: not have_certs.stat.exists
 
     - name: Setup Certbot with Nginx (1)
       apt:
@@ -346,20 +352,26 @@
     - name: Setup Certbot with Nginx (2)
       shell: |
         if [ ! -e /etc/letsencrypt/live/HAVECERTS ]; then
-          service nginx stop
           mkdir -p /etc/nginx/cert
           openssl dhparam -out /etc/nginx/cert/dhparam.pem 2048
-          certbot certonly --standalone --staple-ocsp -d "{{certbot_domains}}" -m {{admin_email}} --agree-tos --eff-email --manual-public-ip-logging-ok --force-renewal
+          systemctl restart nginx
+          certbot certonly --webroot -w /usr/share/nginx/html --staple-ocsp -d "{{certbot_domains}}" -m {{admin_email}} --agree-tos --eff-email --manual-public-ip-logging-ok --force-renewal
           touch /etc/letsencrypt/live/HAVECERTS
-          service nginx start
         else
           true
         fi
+
+    - name: Reconfigure Nginx (https support) (3)
+      template:
+        src: templates/nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+        mode: "u=rw,g=r,o=r"
 
     - name: Enable nginx service
       shell: |
         systemctl daemon-reload
         systemctl enable nginx
+        systemctl restart nginx
 
     - name: Setup app dirs
       template:
