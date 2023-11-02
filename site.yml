@@ -153,7 +153,9 @@
       become_method: sudo
 
     - name: Set default Ruby
-      command: /home/appdeployer/.rvm/bin/rvm alias create default ruby-{{ruby_version}}
+      shell: |
+        /home/appdeployer/.rvm/bin/rvm alias create default ruby-{{ruby_version}}
+        /home/appdeployer/.rvm/bin/rvm use ruby-{{ruby_version}}
       become: true
       become_user: appdeployer
       become_method: sudo

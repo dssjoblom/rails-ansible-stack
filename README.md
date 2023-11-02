@@ -282,6 +282,7 @@ General features:
 - implement https://github.com/jgmdev/ddos-deflate or something similar
 - install newer Redis (Ubuntu 22.04 default doesn't work with Sidekiq 7)
 - puma phased restart (reload)
+- Mina: don't hard-code Ruby version, make Ruby upgrade smoother
 
 Move the following playbook content into this Git repo as well:
 
