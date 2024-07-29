@@ -363,6 +363,12 @@
           true
         fi
 
+    - name: Setup Certbot with Nginx (3)
+      template:
+        src: templates/restart-nginx-after-letsencrypt-renewal.sh.j2
+        dest: /etc/letsencrypt/renewal-hooks/post/001-restart-nginx.sh
+        mode: "u=rwx,g=rx,o=rx"
+
     - name: Reconfigure Nginx (https support) (3)
       template:
         src: templates/nginx.conf.j2
