@@ -33,7 +33,7 @@ end
 # This task is the environment that is loaded for all remote run
 # commands, such as `mina deploy` or `mina rake`.
 task :remote_environment do
-  invoke :'rvm:use', 'ruby-3.1.3'
+  invoke :'rvm:use', File.read(".ruby-version").strip
 end
 
 # Put any custom commands you need to run at setup
