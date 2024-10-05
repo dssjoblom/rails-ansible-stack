@@ -92,26 +92,24 @@ Alternatively, with pipx:
 
    The complete list of variables that need to be set:
 
-   * ansible_host - ip or hostname of server
-   * ansible_user -  which user ansible will be (the user set up in
-     step 1, e.g. deployer)
-   * env_name -  the name of the environment (e.g. 'example' or 'staging')
-   * nginx_server_name - servername set in nginx.conf (e.g. www.host.com)
-   * certbot_domains - comma-separated list of domains to get SSL certs for
-(e.g. host.com,www.host.com)
-   * admin_email - email address of server admin (for Certbot notifications)
-   * rails_env - Rails environment
-   * ruby_version - Ruby version (should be same as in Gemfile)
-   * bundler_version - bundler version (should be same as in Gemfile.lock)
-   * app_directory - directory app is deployed to (e.g. /var/www/myapp)
-   * disallow_robots - if set to yes, nginx sends a robots.txt that disallows all
-   * rails_db_username - username for db user that will created (you will use this in Rails database.yml)
-   * rails_db_password - db password for username (this goes into
-     Rails database.yml as well, will be exported to RAILS_DATABASE_PASSWORD
-     environment variable)
-   * timezone - timezone to set on server
-   * rails_master_key - Rails master key (from config/master.key, generate with e.g. rails:credentials:edit)
-   * additional_rails_variables - additional variables to export. Write this in shell syntax (export VAR=VAL)
+   | Variable                   | Meaning   |
+   |----------------------------|-----------|
+   | ansible_host               | ip or hostname of server |
+   | ansible_user               |  which user ansible will be (the user set up in step 1, e.g. deployer) |
+   | env_name                   | the name of the environment (e.g. 'example' or 'staging') |
+   | nginx_server_name          | servername set in nginx.conf (e.g. www.host.com) |
+   | certbot_domains            | comma-separated list of domains to get SSL certs for (e.g. host.com,www.host.com) |
+   | admin_email                | email address of server admin (for Certbot notifications) |
+   | rails_env                  | Rails environment |
+   | ruby_version               | Ruby version (should be same as in Gemfile) |
+   | bundler_version            | bundler version (should be same as in Gemfile.lock) |
+   | app_directory              | directory app is deployed to (e.g. /var/www/myapp) |
+   | disallow_robots            | if set to yes, nginx sends a robots.txt that disallows all |
+   | rails_db_username          | username for db user that will created (you will use this in Rails database.yml) |
+   | rails_db_password          | db password for username (this goes into Rails database.yml as well, will be exported to RAILS_DATABASE_PASSWORD environment variable) |
+   | timezone                   | timezone to set on server |
+   | rails_master_key           | Rails master key (from config/master.key, generate with e.g. rails:credentials:edit) |
+   | additional_rails_variables | additional variables to export. Write this in shell syntax (export VAR=VAL) |
 
    Test the environment:
 
@@ -301,7 +299,7 @@ Move the following playbook content into this Git repo as well:
 
 # MIT License
 
-Copyright (c) 2023 Daniel Sjöblom
+Copyright (c) 2023, 2024 Daniel Sjöblom
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
