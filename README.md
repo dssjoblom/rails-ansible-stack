@@ -105,8 +105,8 @@ Alternatively, with pipx:
    | bundler_version            | bundler version (should be same as in Gemfile.lock) |
    | app_directory              | directory app is deployed to (e.g. /var/www/myapp) |
    | disallow_robots            | if set to yes, nginx sends a robots.txt that disallows all |
-   | rails_db_username          | username for db user that will created (you will use this in Rails database.yml) |
-   | rails_db_password          | db password for username (this goes into Rails database.yml as well, will be exported to RAILS_DATABASE_PASSWORD environment variable) |
+   | rails_db_username          | username for db user that will be created (you will use this in Rails database.yml) |
+   | rails_db_password          | db password for created user (this goes into Rails database.yml as well, will be exported to RAILS_DATABASE_PASSWORD environment variable) |
    | timezone                   | timezone to set on server |
    | rails_master_key           | Rails master key (from config/master.key, generate with e.g. rails:credentials:edit) |
    | additional_rails_variables | additional variables to export. Write this in shell syntax (export VAR=VAL) |
