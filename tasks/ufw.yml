@@ -1,0 +1,8 @@
+---
+# UFW does not always work: https://bugs.launchpad.net/ubuntu/+source/ufw/+bug/1921350
+# - name: Configure UFW
+#   shell: |
+#     ufw enable
+#     ufw allow 22
+#     ufw allow 80
+#     ufw allow 443

@@ -1,0 +1,33 @@
+---
+- name: Install PostgreSQL
+  apt:
+    name: ['postgresql',
+           'postgresql-server-dev-14',
+           'libpq-dev']
+
+# - name: Configure pg_hba.conf
+#   ansible.builtin.lineinfile:
+#     path: /etc/postgresql/14/main/pg_hba.conf
+#     regexp: '^local(\s+)all(\s+)postgres'
+#     insertafter: '^#local(\s+)all(\s+)postgres'
+#     line: local all postgres md5
+
+# - name: Restart postgresql
+#   shell: |
+#       service postgresql restart
+
+- name: Configure pg_hba.conf
+  ansible.builtin.lineinfile:
+    path: /etc/postgresql/14/main/pg_hba.conf
+    regexp: '^local(\s+)all(\s+)all(\s+)([a-z]+)'
+    insertafter: '^#local(\s+)all(\s+)all(\s+)([a-z]+)'
+    line: local all all md5
+
+- name: Restart postgresql
+  shell: |
+    service postgresql restart
+
+- name: Enable postgresql service
+  shell: |
+    systemctl daemon-reload
+    systemctl enable postgresql

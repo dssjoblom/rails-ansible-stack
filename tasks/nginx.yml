@@ -1,0 +1,61 @@
+---
+- name: Install Nginx from nginx.org
+  shell: |
+    echo "deb http://nginx.org/packages/ubuntu `lsb_release -cs` nginx" | tee /etc/apt/sources.list.d/nginx.list
+    tee /etc/apt/preferences.d/99nginx << END
+    Package: *
+    Pin: origin nginx.org
+    Pin: release o=nginx
+    Pin-Priority: 900
+    END
+    curl -o /tmp/nginx_signing.key https://nginx.org/keys/nginx_signing.key
+    mv /tmp/nginx_signing.key /etc/apt/trusted.gpg.d/nginx_signing.asc
+    apt update
+    apt install nginx
+
+- name: Reconfigure Nginx for Certbot setup (1)
+  stat:
+    path: /etc/letsencrypt/live/HAVECERTS
+  register: have_certs
+
+- name: Reconfigure Nginx for Certbot setup (2)
+  template:
+    src: templates/nginx.http.conf.j2
+    dest: /etc/nginx/nginx.conf
+    mode: "u=rw,g=r,o=r"
+  when: not have_certs.stat.exists
+
+- name: Setup Certbot with Nginx (1)
+  apt:
+    name: ['certbot', 'python3-certbot-nginx']
+    update_cache: true
+
+- name: Setup Certbot with Nginx (2)
+  shell: |
+    if [ ! -e /etc/letsencrypt/live/HAVECERTS ]; then
+      mkdir -p /etc/nginx/cert
+      openssl dhparam -out /etc/nginx/cert/dhparam.pem 2048
+      systemctl restart nginx
+      certbot certonly --webroot -w /usr/share/nginx/html --staple-ocsp -d "{{certbot_domains}}" -m {{admin_email}} --agree-tos --eff-email --manual-public-ip-logging-ok --force-renewal
+      touch /etc/letsencrypt/live/HAVECERTS
+    else
+      true
+    fi
+
+- name: Setup Certbot with Nginx (3)
+  template:
+    src: templates/restart-nginx-after-letsencrypt-renewal.sh.j2
+    dest: /etc/letsencrypt/renewal-hooks/post/001-restart-nginx.sh
+    mode: "u=rwx,g=rx,o=rx"
+
+- name: Reconfigure Nginx (https support) (3)
+  template:
+    src: templates/nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    mode: "u=rw,g=r,o=r"
+
+- name: Enable nginx service
+  shell: |
+    systemctl daemon-reload
+    systemctl enable nginx
+    systemctl restart nginx

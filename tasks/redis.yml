@@ -1,0 +1,32 @@
+---
+- name: Install Redis
+  apt:
+    name: ['redis']
+
+- name: Install Redis server + tools
+  apt:
+    name: ['redis-server', 'redis-tools']
+    update_cache: true
+
+- name: Configure Redis (1)
+  shell: |
+    redis-cli config set appendonly yes
+
+- name: Configure Redis (2)
+  ansible.builtin.lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: '^appendonly '
+    insertafter: '^#appendonly '
+    line: appendonly yes
+
+- name: Configure Redis (3)
+  ansible.builtin.lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: '^maxmemory-policy '
+    insertafter: '^# maxmemory-policy '
+    line: maxmemory-policy noeviction
+
+- name: Enable Redis service
+  shell: |
+    systemctl daemon-reload
+    systemctl enable redis-server

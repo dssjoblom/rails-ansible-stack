@@ -1,0 +1,91 @@
+---
+- name: Make sure we have a 'appdeployer' group
+  group:
+    name: appdeployer
+    state: present
+
+- name: Create "appdeployer" user (with sudo)
+  user:
+    name: appdeployer
+    groups: appdeployer
+    append: true
+    state: present
+    createhome: true
+    shell: /bin/bash
+
+- name: Set up authorized keys for the appdeployer user
+  authorized_key: user=appdeployer key="{{item}}"
+  with_file:
+    - "envs/{{env_name}}/id_ed25519.pub"
+
+# https://github.com/camptocamp/puppet-accounts/issues/35
+- name: Fix SSH passwordless login for appdeployer user
+  shell: |
+    usermod -p '*' appdeployer
+
+- name: Allow 'appdeployer' group to have passwordless sudo for Ruby services
+  blockinfile:
+    dest: "/etc/sudoers"
+    block: |
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl start sidekiq
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl stop sidekiq
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl restart sidekiq
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl reload sidekiq
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl reload-or-restart sidekiq
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl status sidekiq
+
+      %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service sidekiq start
+      %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service sidekiq stop
+      %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service sidekiq restart
+      %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service sidekiq status
+
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl start puma
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl stop puma
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl restart puma
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl reload puma
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl reload-or-restart puma
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl status puma
+
+      %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service puma start
+      %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service puma stop
+      %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service puma restart
+      %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service puma status
+
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl start nginx
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl stop nginx
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl restart nginx
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl reload nginx
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl reload-or-restart nginx
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl status nginx
+
+      %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service nginx start
+      %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service nginx stop
+      %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service nginx restart
+      %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service nginx status
+
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl start redis-server
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl stop redis-server
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl restart redis-server
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl reload redis-server
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl reload-or-restart redis-server
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl status redis-server
+
+      %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service redis start
+      %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service redis stop
+      %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service redis restart
+      %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service redis status
+
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl start postgresql
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl stop postgresql
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl restart postgresql
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl reload postgresql
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl reload-or-restart postgresql
+      %appdeployer ALL=(ALL) NOPASSWD: /bin/systemctl status postgresql
+
+      %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service postgresql start
+      %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service postgresql stop
+      %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service postgresql restart
+      %appdeployer ALL=(ALL) NOPASSWD: /usr/sbin/service postgresql status
+    marker: '# {mark} ANSIBLE MANAGED BLOCK'
+    insertbefore: EOF
+    validate: 'visudo -cf %s'

@@ -1,0 +1,34 @@
+---
+- name: Download RVM
+  get_url:
+    url: https://get.rvm.io
+    dest: /home/appdeployer/rvm.sh
+  become: true
+  become_user: appdeployer
+  become_method: sudo
+
+- name: Install RVM
+  ansible.builtin.command: /bin/bash /home/appdeployer/rvm.sh
+  become: true
+  become_user: appdeployer
+  become_method: sudo
+
+- name: Install Ruby
+  shell: |
+    cd /home/appdeployer
+    source ~/.rvm/scripts/rvm
+    /home/appdeployer/.rvm/bin/rvm install {{ruby_version}}
+  become: true
+  become_user: appdeployer
+  become_method: sudo
+
+- name: Set default Ruby
+  shell: |
+    /home/appdeployer/.rvm/bin/rvm alias create default ruby-{{ruby_version}}
+    /home/appdeployer/.rvm/bin/rvm use ruby-{{ruby_version}}
+  become: true
+  become_user: appdeployer
+  become_method: sudo
+
+- name: Install bundler
+  command: "sudo -iu appdeployer gem install bundler:{{bundler_version}}"

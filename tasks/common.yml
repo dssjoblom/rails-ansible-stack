@@ -1,0 +1,45 @@
+---
+- name: Set timezone
+  community.general.timezone:
+    name: "{{timezone}}"
+
+- name: Configure Limits (1)
+  ansible.builtin.lineinfile:
+    path: /etc/sysctl.conf
+    regexp: '^fs.file-max '
+    insertafter: '^#fs.file-max '
+    line: fs.file-max = 65536
+
+- name: Configure Limits (2)
+  community.general.pam_limits: "domain=* limit_type={{item.limit_type}} limit_item={{item.limit_item}} value={{item.value}}"
+  with_items:
+    - {limit_type: "soft", limit_item: "nproc", value: 65535}
+    - {limit_type: "hard", limit_item: "nproc", value: 65535}
+    - {limit_type: "soft", limit_item: "nofile", value: 65535}
+    - {limit_type: "hard", limit_item: "nofile", value: 65535}
+
+- name: Configure systemd journaling
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/journald.conf
+    regexp: '^SystemMaxUse='
+    insertbefore: '^#SystemMaxUse='
+    line: SystemMaxUse=1G
+
+- name: Configure systemd journaling (2)
+  shell: |
+    systemctl restart systemd-journald
+
+- name: Install prerequisite packages (commonly used dependencies)
+  apt:
+    name: ['build-essential',
+           'libgmp3-dev',
+           'curl',
+           'python3-psycopg2',
+           'gnupg2',
+           'ca-certificates',
+           'lsb-release',
+           'unzip',
+           'wget',
+           'apt-transport-https',
+           'acl',
+           'git']

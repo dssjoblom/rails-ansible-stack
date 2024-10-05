@@ -1,0 +1,13 @@
+---
+- name: Install ImageMagick
+  apt:
+    name: ['imagemagick',
+           'libmagickwand-dev']
+
+- name: Configure ImageMagick policy.xml
+  copy:
+    src: "configs/policy.xml"
+    dest: /etc/ImageMagick-6/policy.xml
+    owner: root
+    group: root
+    mode: u+rw,g-wx,o-wx
