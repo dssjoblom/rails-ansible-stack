@@ -39,6 +39,14 @@ Install Ansible:
 
 `pip3 install ansible`
 
+Alternatively, with pipx:
+
+`sudo apt-get install pipx`
+
+`pipx ensurepath`
+
+`pipx install--include-deps ansible`
+
 # Adding a new environment
 
 0. Add a DNS record for the host, for setting up SSL
