@@ -12,24 +12,36 @@
         upgrade: true
         update_cache: true
 
+    # Common functionality, required regardless of use case
+
     - import_tasks: tasks/users.yml
 
     - import_tasks: tasks/common.yml
 
-    - import_tasks: tasks/ruby.yml
-
-    - import_tasks: tasks/node.yml
-
-    - import_tasks: tasks/imagemagick.yml
+    # Reverse proxy
 
     - import_tasks: tasks/nginx.yml
+
+    # Databases
 
     - import_tasks: tasks/redis.yml
 
     - import_tasks: tasks/postgres.yml
 
+    # Security, required regardless of use case
+
     - import_tasks: tasks/fail2ban.yml
 
     - import_tasks: tasks/ufw.yml # NOTE: not implemented
+
+    # Misc
+
+    - import_tasks: tasks/imagemagick.yml
+
+    # For Ruby/Rails, when running without Docker
+
+    - import_tasks: tasks/ruby.yml
+
+    - import_tasks: tasks/node.yml
 
     - import_tasks: tasks/rails.yml
