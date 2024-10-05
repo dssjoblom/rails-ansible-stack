@@ -195,7 +195,11 @@ http {
     }
 
     # "block" hacking attempts
-    location ~ (\.php$|\.aspx$|\.asp$|\.htm$|\.yaml$|\.yml$) {
+    location ~ (\.php$|\.aspx$|\.asp$|\.htm$|\.yaml$|\.yml$|\.cgi$|\.esp$) {
+      return 404;
+    }
+    # "block" more hacking attempts
+    location ~ ^/(cgi-bin|\.git)/ {
       return 404;
     }
   }
